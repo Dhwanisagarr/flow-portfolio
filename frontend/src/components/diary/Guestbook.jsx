@@ -130,11 +130,10 @@ export default function Guestbook({ reduced }) {
       <div className="relative z-10 w-full max-w-4xl mx-auto px-5 sm:px-14 py-24">
         <div className="gb-rise stamp text-[#e6d99f] inline-block">THE VERY LAST PAGE — GUESTBOOK</div>
 
-        <h2 className="gb-rise mt-6 leading-[1.05]" style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}>
-          <span className="font-display block">Leave a note</span>
-          <span className="font-hand block text-[#e6d99f]" style={{ fontSize: "clamp(2.4rem, 6vw, 4.6rem)" }}>
-            in the back of my diary.
-          </span>
+        <h2 className="gb-rise mt-6 leading-[0.9]" style={{ fontSize: "clamp(2.4rem, 8.5vw, 7rem)" }}>
+          <span className="font-display block">LEAVE A NOTE</span>
+          <span className="font-display block text-[#e6d99f]">IN THE BACK</span>
+          <span className="font-display block">OF MY DIARY.</span>
         </h2>
 
         <p className="gb-rise font-body text-sm sm:text-lg text-[#f1ebdd]/85 max-w-xl mt-5">

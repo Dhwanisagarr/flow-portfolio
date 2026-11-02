@@ -70,8 +70,8 @@ export default function Hero({ onNav, reduced }) {
           <div className="hero-fade w-32 sm:w-56 lg:w-80 h-px bg-white/60 my-3 sm:my-4" />
           <div className="mask-line overflow-hidden">
             <h1
-              className="font-display text-white leading-[1.02]"
-              style={{ fontSize: "clamp(2.6rem, 10vw, 8.5rem)", letterSpacing: "0.06em" }}
+              className="font-display text-white leading-[0.88]"
+              style={{ fontSize: "clamp(3rem, 15vw, 13.5rem)", letterSpacing: "0.01em" }}
               data-testid="hero-title"
             >
               DHWANI SAGAR
@@ -79,8 +79,8 @@ export default function Hero({ onNav, reduced }) {
           </div>
           <div className="mask-line overflow-hidden mt-1 sm:mt-2">
             <span
-              className="font-display text-[#c9c6ea] tracking-[0.28em]"
-              style={{ fontSize: "clamp(1rem, 2.6vw, 2rem)" }}
+              className="font-display text-[#c9c6ea] tracking-[0.35em]"
+              style={{ fontSize: "clamp(0.9rem, 2.2vw, 1.7rem)" }}
             >
               BUILDING&ensp;·&ensp;EXPERIENCES
             </span>

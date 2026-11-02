@@ -65,8 +65,8 @@ export default function Scrapbook({ reduced }) {
             THE SCRAPBOOK OF
           </div>
           <h2
-            className="font-condensed font-bold uppercase leading-[0.95]"
-            style={{ fontSize: "clamp(2.6rem, 9vw, 8rem)", letterSpacing: "0.01em" }}
+            className="font-display leading-[0.85]"
+            style={{ fontSize: "clamp(3rem, 11vw, 10rem)", letterSpacing: "0.01em" }}
             data-testid="scrapbook-title"
           >
             Made Things

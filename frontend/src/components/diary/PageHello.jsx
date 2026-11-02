@@ -35,11 +35,11 @@ export default function PageHello({ reduced }) {
       <div className="relative z-10 w-full max-w-5xl mx-auto px-6 sm:px-14 py-24 text-center">
         <div className="hello-fall stamp text-[#764d70]">LAST PAGE — YOUR TURN</div>
 
-        <h2 className="hello-rise mt-7 leading-[1.05]" style={{ fontSize: "clamp(2.2rem, 6vw, 5rem)" }}>
-          <span className="font-display block">Say hello,</span>
-          <span className="font-hand block text-[#764d70]" style={{ fontSize: "clamp(2.6rem, 7vw, 5.6rem)" }}>
-            let&rsquo;s build something together.
-          </span>
+        <h2 className="hello-rise mt-7 leading-[0.9]" style={{ fontSize: "clamp(2.5rem, 9vw, 7.5rem)" }}>
+          <span className="font-display block">SAY HELLO,</span>
+          <span className="font-display block text-[#764d70]">LET&rsquo;S BUILD</span>
+          <span className="font-display block">SOMETHING</span>
+          <span className="font-display block text-[#764d70]">TOGETHER.</span>
         </h2>
 
         <p className="hello-rise font-body text-sm sm:text-lg text-[#3f2c22]/85 max-w-xl mx-auto mt-6">

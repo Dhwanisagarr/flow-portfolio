@@ -24,7 +24,7 @@ body {
   margin: 0;
   background: var(--violet);
   color: var(--ink);
-  font-family: "Lora", Georgia, serif;
+  font-family: "Anton", "Arial Narrow", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -35,10 +35,19 @@ body {
   color: var(--violet);
 }
 
-.font-display { font-family: "Italiana", serif; }
-.font-condensed { font-family: "Oswald", sans-serif; }
-.font-hand { font-family: "Caveat", cursive; }
-.font-body { font-family: "Lora", Georgia, serif; }
+/* One face everywhere: heavy, ultra-condensed, uppercase. */
+.font-display,
+.font-condensed,
+.font-hand,
+.font-body {
+  font-family: "Anton", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.font-display { letter-spacing: 0.015em; line-height: 0.9; }
+.font-condensed { letter-spacing: 0.06em; line-height: 1.15; }
+.font-hand { letter-spacing: 0.02em; line-height: 1; }
+.font-body { letter-spacing: 0.03em; line-height: 1.4; }
 
 /* ---------- notebook paper ---------- */
 .page-lines {

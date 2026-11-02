@@ -42,19 +42,25 @@ const PageShell = ({ id, bg, ink, line, margin, children, testid, innerRef }) =>
 );
 
 /* ---------------- PAGE 1 · INTRO — scroll crawl ---------------- */
-const INTRO_LINES = [
-  { text: "I notice things.", cls: "font-display text-[#3a382f]", size: "clamp(2.3rem, 8vw, 6.5rem)" },
-  { text: "I ask why.", cls: "font-hand text-[#814c57]", size: "clamp(2.9rem, 10vw, 8rem)" },
-  { text: "and I make things.", cls: "font-display text-[#3a382f]", size: "clamp(2.3rem, 8vw, 6.5rem)" },
-  { text: "PRODUCT BUILDER · PRODUCT THINKER · CURIOUS HUMAN", cls: "font-condensed tracking-[0.28em] text-[#596743]", size: "clamp(0.85rem, 2.6vw, 1.35rem)" },
-  { text: "I collect ideas the way some people collect stickers — screenshot folders, notebook margins, voice notes at 2am.", cls: "font-body text-[#3a382f]/85", size: "clamp(1.15rem, 3.4vw, 2.1rem)", max: "max-w-3xl" },
-  { text: "I connect dots across products, people and stories, and turn random thoughts into things you can actually use.", cls: "font-body text-[#3a382f]/85", size: "clamp(1.15rem, 3.4vw, 2.1rem)", max: "max-w-3xl" },
+const INTRO_STATEMENTS = [
+  { lines: ["I NOTICE", "THINGS."], color: "text-[#3a382f]" },
+  { lines: ["I ASK WHY."], color: "text-[#814c57]" },
+  { lines: ["AND I MAKE", "THINGS."], color: "text-[#3a382f]" },
+  {
+    lines: ["PRODUCT BUILDER · PRODUCT THINKER", "CURIOUS HUMAN"],
+    color: "text-[#596743]",
+    label: true,
+  },
+];
+const INTRO_PARAS = [
+  "I collect ideas the way some people collect stickers — screenshot folders, notebook margins, voice notes at 2am.",
+  "I connect dots across products, people and stories, and turn random thoughts into things you can actually use.",
 ];
 const INTRO_CHIPS = ["CS GRADUATE", "FINTECH EXPERIENCE", "PRODUCT ENTHUSIAST", "INDEPENDENT BUILDER", "STILL LEARNING, STILL EXPERIMENTING"];
 
 export function PageIntro({ reduced }) {
   const root = useRef(null);
-  const n = INTRO_LINES.length;
+  const n = INTRO_STATEMENTS.length + INTRO_PARAS.length; // 6 crawl blocks
   const total = n + 0.4; // + hold time for the final chips block
 
   useEffect(() => {
@@ -71,7 +77,7 @@ export function PageIntro({ reduced }) {
         },
       });
       tl.fromTo(".intro-fixed", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "none" }, 0);
-      INTRO_LINES.forEach((_, i) => {
+      INTRO_STATEMENTS.forEach((_, i) => {
         tl.fromTo(
           `.intro-line-${i}`,
           { yPercent: 135, opacity: 0, scale: 1.045, rotation: 1.2 },
@@ -82,6 +88,20 @@ export function PageIntro({ reduced }) {
           `.intro-line-${i}`,
           { yPercent: -135, opacity: 0, duration: 0.28, ease: "power2.in" },
           i + 0.64
+        );
+      });
+      INTRO_PARAS.forEach((_, i) => {
+        const t = INTRO_STATEMENTS.length + i;
+        tl.fromTo(
+          `.intro-line-${t}`,
+          { yPercent: 135, opacity: 0, scale: 1.03 },
+          { yPercent: 0, opacity: 1, scale: 1, duration: 0.34, ease: "power3.out" },
+          t
+        );
+        tl.to(
+          `.intro-line-${t}`,
+          { yPercent: -135, opacity: 0, duration: 0.28, ease: "power2.in" },
+          t + 0.64
         );
       });
       tl.fromTo(
@@ -95,8 +115,15 @@ export function PageIntro({ reduced }) {
   }, [reduced]);
 
   const lineWrap = reduced
-    ? "relative px-8 sm:px-14 py-10 max-w-5xl"
-    : "absolute inset-0 flex items-center justify-center px-6 will-change-transform";
+    ? "relative px-6 sm:px-14 py-12 w-full"
+    : "absolute inset-0 flex items-center justify-center px-5 sm:px-10 will-change-transform";
+
+  const blockEl = (i, inner, reduced) =>
+    reduced ? (
+      <div key={i} className={lineWrap}>{inner}</div>
+    ) : (
+      <div key={i} className={lineWrap}>{inner}</div>
+    );
 
   return (
     <PageShell
@@ -111,9 +138,9 @@ export function PageIntro({ reduced }) {
       {/* fixed anchors — the scene moves around them */}
       <div className="intro-fixed absolute top-24 sm:top-16 right-[6%] text-[#dda987] z-10 opacity-0">
         <SketchGirl className="w-16 h-16 sm:w-24 sm:h-24 float-slow" style={{ "--rot": "-4deg" }} />
-        <div className="font-hand text-xl sm:text-2xl -rotate-3 mt-1 text-[#814c57]">you found my diary!</div>
+        <div className="font-hand text-sm sm:text-xl -rotate-3 mt-1 text-[#814c57] tracking-[0.06em]">YOU FOUND MY DIARY!</div>
       </div>
-      <div className="intro-fixed absolute top-24 sm:top-16 left-6 sm:left-14 z-10 opacity-0">
+      <div className="intro-fixed absolute top-24 sm:top-16 left-4 sm:left-14 z-10 opacity-0">
         <div className="stamp text-[#596743]">PAGE 01 — HELLO</div>
       </div>
       <div className="absolute right-[7%] top-[45%] text-[#dda987] z-10 hidden sm:block">
@@ -131,10 +158,19 @@ export function PageIntro({ reduced }) {
 
       {reduced ? (
         <div className="relative z-10 w-full py-36 space-y-20">
-          {INTRO_LINES.map((l, i) => (
+          {INTRO_STATEMENTS.map((s, i) => (
             <div key={i} className={lineWrap}>
-              <div className={`${l.cls} text-center leading-[1.12] ${l.max || ""}`} style={{ fontSize: l.size }}>
-                {l.text}
+              <div className={`font-display text-center leading-[0.84] ${s.color} ${s.label ? "tracking-[0.14em]" : ""}`} style={{ fontSize: s.label ? "clamp(0.95rem, 2.6vw, 1.7rem)" : "clamp(3.2rem, 15.5vw, 11rem)" }}>
+                {s.lines.map((ln, k) => (
+                  <span key={k} className="block">{ln}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+          {INTRO_PARAS.map((p, i) => (
+            <div key={i} className={lineWrap}>
+              <div className="font-body text-center text-[#3a382f]/85 leading-[1.3] max-w-3xl mx-auto" style={{ fontSize: "clamp(0.95rem, 2.6vw, 1.8rem)" }}>
+                {p}
               </div>
             </div>
           ))}
@@ -145,18 +181,27 @@ export function PageIntro({ reduced }) {
                   <span key={c} className="chip">{c}</span>
                 ))}
               </div>
-              <div className="font-hand text-2xl sm:text-3xl text-[#764d70] mt-6 -rotate-1">
-                still learning, still experimenting.
+              <div className="font-hand text-lg sm:text-2xl text-[#764d70] mt-6 tracking-[0.08em]">
+                STILL LEARNING, STILL EXPERIMENTING.
               </div>
             </div>
           </div>
         </div>
       ) : (
         <div className="relative z-10 w-full h-screen">
-          {INTRO_LINES.map((l, i) => (
+          {INTRO_STATEMENTS.map((s, i) => (
             <div key={i} className={lineWrap}>
-              <div className={`intro-line-${i} opacity-0 ${l.cls} text-center leading-[1.12] ${l.max || ""}`} style={{ fontSize: l.size }}>
-                {l.text}
+              <div className={`intro-line-${i} opacity-0 font-display text-center leading-[0.84] ${s.color} ${s.label ? "tracking-[0.14em]" : ""}`} style={{ fontSize: s.label ? "clamp(0.95rem, 2.6vw, 1.7rem)" : "clamp(3.2rem, 15.5vw, 11rem)" }}>
+                {s.lines.map((ln, k) => (
+                  <span key={k} className="block">{ln}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+          {INTRO_PARAS.map((p, i) => (
+            <div key={i} className={lineWrap}>
+              <div className={`intro-line-${INTRO_STATEMENTS.length + i} opacity-0 font-body text-center text-[#3a382f]/85 leading-[1.3] max-w-3xl`} style={{ fontSize: "clamp(0.95rem, 2.6vw, 1.8rem)" }}>
+                {p}
               </div>
             </div>
           ))}
@@ -167,8 +212,8 @@ export function PageIntro({ reduced }) {
                   <span key={c} className="chip">{c}</span>
                 ))}
               </div>
-              <div className="font-hand text-2xl sm:text-3xl text-[#764d70] mt-6 -rotate-1">
-                still learning, still experimenting.
+              <div className="font-hand text-lg sm:text-2xl text-[#764d70] mt-6 tracking-[0.08em]">
+                STILL LEARNING, STILL EXPERIMENTING.
               </div>
             </div>
           </div>
@@ -214,10 +259,10 @@ export function PageWhatIDo({ reduced }) {
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-14 py-20">
         <div className="do-fall stamp text-[#814c57]">PAGE 02 — DOING</div>
 
-        <h2 className="do-rise mt-6 leading-[1.05]" style={{ fontSize: "clamp(1.9rem, 5vw, 4rem)" }}>
-          <span className="font-display block">I turn what-ifs</span>
+        <h2 className="do-rise mt-6 leading-[0.9]" style={{ fontSize: "clamp(2.4rem, 8.5vw, 7rem)" }}>
+          <span className="font-display block">I TURN WHAT-IFS</span>
           <span className="font-display block">
-            into <span className="font-hand text-[#596743]" style={{ fontSize: "clamp(2.2rem, 5.6vw, 4.4rem)" }}>what&rsquo;s next.</span>
+            INTO <span className="text-[#596743]">WHAT&rsquo;S NEXT.</span>
           </span>
         </h2>
 
@@ -300,11 +345,10 @@ export function PageObsession({ reduced }) {
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-14 py-20">
         <div className="ob-fall stamp text-[#e6d99f]">PAGE 03 — OBSESSION</div>
 
-        <h2 className="ob-rise mt-6 leading-[1.06]" style={{ fontSize: "clamp(1.9rem, 4.8vw, 3.8rem)" }}>
-          <span className="font-display block">What I&rsquo;m</span>
-          <span className="font-hand block text-[#e6d99f]" style={{ fontSize: "clamp(2.4rem, 6vw, 4.8rem)" }}>
-            a little obsessed with&hellip;
-          </span>
+        <h2 className="ob-rise mt-6 leading-[0.9]" style={{ fontSize: "clamp(2.4rem, 8.5vw, 7rem)" }}>
+          <span className="font-display block">WHAT I&rsquo;M</span>
+          <span className="font-display block text-[#e6d99f]">A LITTLE OBSESSED</span>
+          <span className="font-display block">WITH&hellip;</span>
         </h2>
 
         <div className="ob-rise flex flex-wrap gap-5 sm:gap-7 mt-9 max-w-3xl">
@@ -370,11 +414,10 @@ export function PageWork({ reduced }) {
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-14 py-20">
         <div className="wk-fall stamp text-[#e6d99f]">PAGE 04 — THE WORK CHAPTER</div>
 
-        <h2 className="wk-rise mt-6 leading-[1.06]" style={{ fontSize: "clamp(1.9rem, 4.8vw, 3.8rem)" }}>
-          <span className="font-display block">Fintech taught me</span>
-          <span className="font-display block">
-            to love the <span className="font-hand text-[#e6d99f]" style={{ fontSize: "clamp(2.3rem, 5.6vw, 4.4rem)" }}>messy middle.</span>
-          </span>
+        <h2 className="wk-rise mt-6 leading-[0.9]" style={{ fontSize: "clamp(2.4rem, 8.5vw, 7rem)" }}>
+          <span className="font-display block">FINTECH TAUGHT ME</span>
+          <span className="font-display block">TO LOVE THE</span>
+          <span className="font-display block text-[#e6d99f]">MESSY MIDDLE.</span>
         </h2>
 
         <div className="wk-card relative bg-[#f1ebdd] text-[#3a382f] max-w-2xl mt-9 px-6 py-7 sm:px-9 sm:py-9 shadow-[0_18px_45px_rgba(20,18,40,0.4)]">
