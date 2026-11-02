@@ -3,15 +3,17 @@ import gsap from "gsap";
 import { PaperPlane, Star, Squiggle, Notebook } from "./doodles";
 
 const PROJECTS = [
-  { n: "01", title: "The What-If Machine", tag: "PROBLEM EXPLORING", rot: "-rotate-2",
-    desc: "A tiny tool that catches stray what-ifs and turns them into testable product ideas." },
-  { n: "02", title: "Tiny Wins", tag: "PROTOTYPE", rot: "rotate-1",
-    desc: "A two-tap habit tracker for people who abandon habit trackers." },
-  { n: "03", title: "Cart Confessions", tag: "FINTECH UX STUDY", rot: "rotate-2",
-    desc: "Why people abandon checkouts — and the small fixes that made them stay." },
-  { n: "04", title: "Inbox, Quietly", tag: "EXPERIENCE DESIGN", rot: "-rotate-1",
-    desc: "An email concept that treats attention as the scarcest feature." },
-  { n: "05", title: "This Diary", tag: "BUILD IN PUBLIC", rot: "rotate-2",
+  { n: "01", title: "Dahlia", tag: "MEMORY JOURNAL", rot: "-rotate-2", href: "https://mydahlia.vercel.app/",
+    desc: "Your memories, in bloom — plant a photo memory every day and watch a monthly botanical garden grow." },
+  { n: "02", title: "StreakUp", tag: "HABIT TRACKER", rot: "rotate-1", href: "https://streak-up-streakup.vercel.app/",
+    desc: "Small actions, visible momentum — daily challenges, streaks and notes that make progress easy to see." },
+  { n: "03", title: "Stack Optimizer", tag: "FINTECH · AI", rot: "rotate-2", href: "https://fintech-stack-nine.vercel.app/",
+    desc: "Your money is everywhere — an AI-powered builder for India's best fintech apps and money stacks." },
+  { n: "04", title: "Product Thinking Teardowns", tag: "ESSAYS · NOTION", rot: "-rotate-1", href: "https://pickled-chair-247.notion.site/Product-Thinking-Teardowns-3e0900d91be98010a138e2571183e521",
+    desc: "Teardowns and case studies on user problems, product decisions, and how good products could be better." },
+  { n: "05", title: "SignalDesk", tag: "LIVE TOOL · STREAMLIT", rot: "rotate-2", href: "https://signaldesk.streamlit.app/",
+    desc: "The newest experiment, built and running live on Streamlit — open it up and take it for a spin." },
+  { n: "06", title: "This Diary", tag: "BUILD IN PUBLIC", rot: "-rotate-2", href: null,
     desc: "The website you are inside right now — written, illustrated & coded by me." },
 ];
 
@@ -23,9 +25,7 @@ export default function Scrapbook({ reduced }) {
     if (reduced) return;
     const ctx = gsap.context(() => {
       const dist = () => Math.max(track.current.scrollWidth - window.innerWidth, 0);
-      gsap.to(track.current, {
-        x: () => -dist(),
-        ease: "none",
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root.current,
           start: "top top",
@@ -36,13 +36,12 @@ export default function Scrapbook({ reduced }) {
           invalidateOnRefresh: true,
         },
       });
-      gsap.from(".sb-card", {
-        y: 90,
-        opacity: 0,
-        stagger: 0.08,
-        duration: 0.4,
-        scrollTrigger: { trigger: root.current, start: "top 70%" },
-      });
+      tl.fromTo(
+        ".sb-card",
+        { y: 90, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.04, duration: 0.8, ease: "power2.out" },
+        0
+      ).to(track.current, { x: () => -dist(), ease: "none", duration: 3 }, 0);
     }, root);
     return () => ctx.revert();
   }, [reduced]);
@@ -78,24 +77,47 @@ export default function Scrapbook({ reduced }) {
         </div>
 
         <div ref={track} className="flex gap-6 sm:gap-10 px-6 sm:px-14 will-change-transform pb-8">
-          {PROJECTS.map((p) => (
-            <article
-              key={p.n}
-              data-testid={`project-card-${p.n}`}
-              className={`sb-card ${p.rot} relative shrink-0 w-[78vw] sm:w-[54vw] lg:w-[36vw] bg-[#f1ebdd] text-[#3a382f] px-6 py-7 sm:px-9 sm:py-9 shadow-[0_18px_45px_rgba(20,18,40,0.45)]`}
-            >
-              <span className="tape -top-3 left-10 -rotate-2" />
-              <div className="flex items-baseline justify-between">
-                <span className="font-display text-4xl sm:text-5xl text-[#5c5b85]">{p.n}</span>
-                <span className="font-condensed text-[9px] sm:text-[10px] tracking-[0.26em] text-[#814c57] border border-dashed border-[#814c57]/60 px-2.5 py-1">
-                  {p.tag}
-                </span>
-              </div>
-              <h3 className="font-display text-2xl sm:text-4xl mt-4 leading-tight">{p.title}</h3>
-              <p className="font-body text-xs sm:text-base text-[#3a382f]/80 mt-3 leading-relaxed">{p.desc}</p>
-              <Squiggle className="w-20 text-[#596743] mt-5" />
-            </article>
-          ))}
+          {PROJECTS.map((p) => {
+            const Card = (
+              <>
+                <span className="tape -top-3 left-10 -rotate-2" />
+                <div className="flex items-baseline justify-between">
+                  <span className="font-display text-4xl sm:text-5xl text-[#5c5b85]">{p.n}</span>
+                  <span className="font-condensed text-[9px] sm:text-[10px] tracking-[0.26em] text-[#814c57] border border-dashed border-[#814c57]/60 px-2.5 py-1">
+                    {p.tag}
+                  </span>
+                </div>
+                <h3 className="font-display text-2xl sm:text-4xl mt-4 leading-tight">{p.title}</h3>
+                <p className="font-body text-xs sm:text-base text-[#3a382f]/80 mt-3 leading-relaxed">{p.desc}</p>
+                <Squiggle className="w-20 text-[#596743] mt-5" />
+                {p.href && (
+                  <div className="font-condensed text-[9px] sm:text-[10px] tracking-[0.26em] text-[#596743] mt-3">
+                    OPEN THE LIVE PROJECT &rarr;
+                  </div>
+                )}
+              </>
+            );
+            return p.href ? (
+              <a
+                key={p.n}
+                href={p.href}
+                target="_blank"
+                rel="noreferrer"
+                data-testid={`project-card-${p.n}`}
+                className={`sb-card ${p.rot} relative shrink-0 w-[78vw] sm:w-[54vw] lg:w-[36vw] bg-[#f1ebdd] text-[#3a382f] px-6 py-7 sm:px-9 sm:py-9 shadow-[0_18px_45px_rgba(20,18,40,0.45)] block hover:-translate-y-1.5 hover:shadow-[0_26px_60px_rgba(20,18,40,0.55)] transition-all duration-300`}
+              >
+                {Card}
+              </a>
+            ) : (
+              <article
+                key={p.n}
+                data-testid={`project-card-${p.n}`}
+                className={`sb-card ${p.rot} relative shrink-0 w-[78vw] sm:w-[54vw] lg:w-[36vw] bg-[#f1ebdd] text-[#3a382f] px-6 py-7 sm:px-9 sm:py-9 shadow-[0_18px_45px_rgba(20,18,40,0.45)]`}
+              >
+                {Card}
+              </article>
+            );
+          })}
           <div className="shrink-0 w-[40vw] sm:w-[26vw] flex flex-col items-center justify-center gap-4 text-[#e6d99f]">
             <Notebook className="w-12 h-12" />
             <div className="font-hand text-2xl text-center -rotate-2">more pages being written&hellip;</div>

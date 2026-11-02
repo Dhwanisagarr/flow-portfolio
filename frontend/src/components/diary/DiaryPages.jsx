@@ -321,13 +321,18 @@ export function PageWork({ reduced }) {
         <div className="wk-card relative bg-[#f1ebdd] text-[#3a382f] max-w-2xl mt-9 px-6 py-7 sm:px-9 sm:py-9 shadow-[0_18px_45px_rgba(20,18,40,0.4)]">
           <span className="tape -top-3 left-8 -rotate-3" />
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <div className="font-condensed font-semibold tracking-[0.2em] text-sm sm:text-base">FYERS SECURITIES</div>
-            <div className="font-condensed text-[10px] tracking-[0.24em] text-[#814c57]">[ROLE] · [DATES]</div>
+            <div className="font-condensed font-semibold tracking-[0.2em] text-sm sm:text-base">FYERS</div>
+            <div className="font-condensed text-[10px] tracking-[0.24em] text-[#814c57]">
+              APPRENTICE · JUL 2025 – DEC 2025
+            </div>
+          </div>
+          <div className="font-condensed text-[9px] sm:text-[10px] tracking-[0.22em] text-[#3a382f]/60 mt-1">
+            BENGALURU, KARNATAKA, INDIA · ON-SITE · 6 MOS
           </div>
           <ul className="mt-4 space-y-2.5 font-body text-sm sm:text-base leading-relaxed text-[#3a382f]/85">
-            <li className="flex gap-2.5"><span className="font-hand text-[#764d70]">&bull;</span>Built analytics that made the numbers finally make sense.</li>
-            <li className="flex gap-2.5"><span className="font-hand text-[#764d70]">&bull;</span>Developed features end-to-end, from sketch to shipped.</li>
-            <li className="flex gap-2.5"><span className="font-hand text-[#764d70]">&bull;</span>Worked closely with product — shaping what got built, and why.</li>
+            <li className="flex gap-2.5"><span className="font-hand text-[#764d70]">&bull;</span>Worked with product, engineering and analytics teams on onboarding/signup workflows and related updates.</li>
+            <li className="flex gap-2.5"><span className="font-hand text-[#764d70]">&bull;</span>Supported event tracking validation across Google Analytics, CleverTap and AppsFlyer — making sure the data was captured correctly.</li>
+            <li className="flex gap-2.5"><span className="font-hand text-[#764d70]">&bull;</span>Performed API and workflow validation using Postman and cURL before release.</li>
           </ul>
         </div>
 

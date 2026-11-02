@@ -21,9 +21,10 @@ Build an immersive personal portfolio landing page for Dhwani Sagar that feels l
 All of Phase 1: hero scene + entrance reveal, zoom-into-book transition with opening covers, all six pages, pinned horizontal showcase, hello page, ambient sound toggle, Lenis + GSAP unified loop, mobile/tablet/desktop verified via screenshots (1440×900, 390×844), prefers-reduced-motion support.
 
 ## Backlog
-- P1: Swap 5 sample projects for real ones; real role/dates on Fyers Securities card; real email + LinkedIn/GitHub URLs (currently placeholders: hello@dhwannisagar.com).
+- P1: SignalDesk card description is neutral (Streamlit page can't be crawled) — refine its one-liner with Dhwani.
 - P1: SEO/social-share meta, custom OG image (Phase 2 per plan).
 - P2: Real ambient audio track; résumé download page; guestbook.
 
 ## Notes
+- Real content swapped in (2026-11-02): Scrapbook cards = Dahlia, StreakUp, Stack Optimizer, Product Thinking Teardowns (Notion), SignalDesk, This Diary — all live-linked. Contact = dhwanisagar17@gmail.com, LinkedIn /in/dhwanisagar, GitHub Dhwanisagarr. Work page = FYERS, Apprentice, Jul 2025 – Dec 2025 · 6 mos, Bengaluru · On-site, three real bullets.
 - No credentials required (no backend). Sound is synthesized ambient hum, MOCKED — replace with real track later.

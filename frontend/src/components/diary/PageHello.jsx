@@ -50,21 +50,23 @@ export default function PageHello({ reduced }) {
         <div className="hello-rise mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
             data-testid="email-link"
-            href="mailto:hello@dhwannisagar.com"
+            href="mailto:dhwanisagar17@gmail.com"
             className="font-condensed text-sm sm:text-base tracking-[0.2em] bg-[#383556] text-[#f1ebdd] px-8 py-4 rounded-full shadow-[0_14px_35px_rgba(40,30,60,0.4)] hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(40,30,60,0.5)] transition-all duration-300"
           >
-            HELLO@DHWANNISAGAR.COM
+            DHWANISAGAR17@GMAIL.COM
           </a>
           <div className="flex gap-3">
             {[
-              { l: "LINKEDIN", t: "linkedin-link" },
-              { l: "GITHUB", t: "github-link" },
-            ].map(({ l, t }) => (
+              { l: "LINKEDIN", t: "linkedin-link", href: "https://www.linkedin.com/in/dhwanisagar/" },
+              { l: "GITHUB", t: "github-link", href: "https://github.com/Dhwanisagarr" },
+            ].map(({ l, t, href }) => (
               <a
                 key={l}
                 data-testid={t}
-                href="#contact"
-                aria-label={`${l} (add your link here)`}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={l}
                 className="chip text-[#764d70] hover:bg-[#764d70] hover:text-[#f1ebdd] transition-colors duration-300"
               >
                 {l}
