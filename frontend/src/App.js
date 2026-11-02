@@ -9,6 +9,7 @@ import ZoomTransition from "./components/diary/ZoomTransition";
 import { PageIntro, PageWhatIDo, PageObsession, PageWork } from "./components/diary/DiaryPages";
 import Scrapbook from "./components/diary/Scrapbook";
 import PageHello from "./components/diary/PageHello";
+import Guestbook from "./components/diary/Guestbook";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -84,6 +85,7 @@ function App() {
       <PageWork reduced={reduced} />
       <Scrapbook reduced={reduced} />
       <PageHello reduced={reduced} />
+      <Guestbook reduced={reduced} />
     </div>
   );
 }

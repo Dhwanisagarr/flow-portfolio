@@ -81,6 +81,19 @@ export default function PageHello({ reduced }) {
           thanks for wandering through my diary — come back anytime.
         </div>
 
+        <a
+          data-testid="guestbook-link"
+          href="#guestbook"
+          onClick={(e) => {
+            e.preventDefault();
+            if (window.__lenis) window.__lenis.scrollTo("#guestbook");
+            else document.querySelector("#guestbook")?.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="hello-rise font-condensed text-[11px] tracking-[0.26em] text-[#383556] inline-flex items-center gap-2 mt-6 border-b-2 border-dashed border-[#383556]/50 hover:text-[#764d70] hover:border-[#764d70] transition-colors duration-300"
+        >
+          PSST — LEAVE A NOTE AT THE BACK &darr;
+        </a>
+
         <div className="hello-rise flex items-center justify-center gap-2 mt-6 text-[#764d70]">
           <SketchGirl className="w-14 h-14" />
           <Heart className="w-6 h-6" />

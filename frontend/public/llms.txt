@@ -1,0 +1,26 @@
+# Dhwani Sagar — Inside the Illustrated Diary
+
+A personal portfolio presented as a hand-illustrated, scroll-driven diary. Visitors arrive at an
+illustrated desk scene, zoom into a stack of books, the book opens, and each page of the diary
+introduces a different part of Dhwani's story.
+
+## Who it is for
+Recruiters, founders and product people who want to understand how Dhwani thinks, works and builds —
+and anyone open to collaborating on product ideas.
+
+## What's inside
+- Hello: Dhwani Sagar — product builder, product thinker, curious human; computer science graduate with fintech experience, independent builder still learning and experimenting.
+- What I Do: turning what-ifs into what's next through problem exploring, product thinking, experience designing, prototyping and building (think, design, build, repeat).
+- Obsession: ideas, unexpected possibilities, little details, making useful things more interesting; currently coding a lot and learning new things; open to product roles.
+- The Work Chapter: FYERS, Apprentice, Jul 2025 – Dec 2025, Bengaluru, India — onboarding/signup workflows with product, engineering and analytics; event tracking validation across Google Analytics, CleverTap and AppsFlyer; API and workflow validation with Postman and cURL.
+- The Scrapbook of Made Things: live projects — Dahlia, StreakUp, Stack Optimizer, Product Thinking Teardowns, SignalDesk — plus the diary site itself.
+- Guestbook: visitors can leave a note at the back of the diary.
+
+## Say hello
+- Email: dhwanisagar17@gmail.com
+- LinkedIn: https://www.linkedin.com/in/dhwanisagar/
+- GitHub: https://github.com/Dhwanisagarr
+- Résumé: available as a download from the work chapter.
+
+llms.txt is a proposed convention that no major AI provider has committed to honouring; the static
+head, noscript block and structured data are what actually carry content to AI crawlers today.
