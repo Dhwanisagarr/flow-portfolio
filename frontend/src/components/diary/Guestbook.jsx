@@ -22,13 +22,28 @@ export default function Guestbook({ reduced }) {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [adminKey, setAdminKey] = useState(
+    () => localStorage.getItem("gb_admin_key") || ""
+  );
+  const [keyDraft, setKeyDraft] = useState("");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  const loadNotes = (key = adminKey) =>
+    axios
+      .get(API, { params: key ? { all: 1, key } : {} })
+      .then((r) => setNotes(r.data))
+      .catch((e) =>
+        toast.error(
+          e?.response?.status === 403
+            ? "That key doesn't unlock the moderation drawer."
+            : "Couldn't open the guestbook — try refreshing"
+        )
+      )
+      .finally(() => setLoading(false));
 
   useEffect(() => {
-    axios
-      .get(API)
-      .then((r) => setNotes(r.data))
-      .catch(() => toast.error("Couldn't open the guestbook — try refreshing"))
-      .finally(() => setLoading(false));
+    loadNotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -56,10 +71,45 @@ export default function Guestbook({ reduced }) {
       setName("");
       setMessage("");
       toast.success("Your note is in the diary — thank you!");
-    } catch {
-      toast.error("The pen ran dry — try again in a moment");
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      toast.error(
+        typeof d === "string"
+          ? d
+          : Array.isArray(d)
+            ? d[0]?.msg || "The pen ran dry — try again in a moment"
+            : "The pen ran dry — try again in a moment"
+      );
     } finally {
       setSending(false);
+    }
+  };
+
+  const saveKey = () => {
+    const k = keyDraft.trim();
+    if (!k) return;
+    localStorage.setItem("gb_admin_key", k);
+    setAdminKey(k);
+    setShowKeyInput(false);
+    toast.success("Moderation drawer unlocked");
+  };
+
+  const exitModeration = () => {
+    localStorage.removeItem("gb_admin_key");
+    setAdminKey("");
+    loadNotes("");
+    toast.success("Moderation drawer locked");
+  };
+
+  const toggleHidden = async (n) => {
+    try {
+      await axios.patch(`${API}/${n.id}`, { hidden: !n.hidden, key: adminKey });
+      setNotes((list) =>
+        list.map((x) => (x.id === n.id ? { ...x, hidden: !n.hidden } : x))
+      );
+      toast.success(n.hidden ? "Note back on the page" : "Note tucked away — visitors won't see it");
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || "Couldn't update that note");
     }
   };
 
@@ -156,20 +206,81 @@ export default function Guestbook({ reduced }) {
                   <article
                     key={n.id}
                     data-testid="guestbook-note"
-                    className={`relative w-full sm:w-[calc(50%-14px)] px-5 py-5 sm:px-6 sm:py-6 shadow-[0_12px_30px_rgba(15,12,32,0.4)] ${i % 2 ? "rotate-1" : "-rotate-1"}`}
+                    className={`relative w-full sm:w-[calc(50%-14px)] px-5 py-5 sm:px-6 sm:py-6 shadow-[0_12px_30px_rgba(15,12,32,0.4)] ${i % 2 ? "rotate-1" : "-rotate-1"} ${n.hidden ? "opacity-40" : ""}`}
                     style={{ background: s.bg, color: s.ink }}
                   >
                     <span className="tape -top-3 left-6 rotate-2" />
+                    {n.hidden && (
+                      <span className="absolute top-2 right-2 font-condensed text-[8px] tracking-[0.2em] border border-dashed border-[#814c57] text-[#814c57] px-1.5 py-0.5">
+                        HIDDEN
+                      </span>
+                    )}
                     <p className="font-body text-sm sm:text-base leading-relaxed">&ldquo;{n.message}&rdquo;</p>
                     <div className="flex items-center justify-between mt-4">
                       <span className="font-hand text-xl" style={{ color: "#764d70" }}>— {n.name}</span>
-                      <span className="font-condensed text-[9px] tracking-[0.18em] opacity-60">
-                        {fmtDate(n.created_at)}
+                      <span className="flex items-center gap-3">
+                        {adminKey && (
+                          <button
+                            data-testid="guestbook-note-toggle"
+                            onClick={() => toggleHidden(n)}
+                            className="font-condensed text-[9px] tracking-[0.18em] underline underline-offset-2 hover:text-[#383556] transition-colors"
+                          >
+                            {n.hidden ? "SHOW" : "HIDE"}
+                          </button>
+                        )}
+                        <span className="font-condensed text-[9px] tracking-[0.18em] opacity-60">
+                          {fmtDate(n.created_at)}
+                        </span>
                       </span>
                     </div>
                   </article>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        <div className="gb-rise mt-14 text-center">
+          {!adminKey && !showKeyInput && (
+            <button
+              data-testid="guestbook-moderate-button"
+              onClick={() => setShowKeyInput(true)}
+              className="font-condensed text-[9px] tracking-[0.28em] text-[#f1ebdd]/40 hover:text-[#e6d99f] transition-colors duration-300"
+            >
+              MODERATE NOTES
+            </button>
+          )}
+          {showKeyInput && !adminKey && (
+            <div className="inline-flex items-center gap-2" data-testid="guestbook-key-panel">
+              <input
+                data-testid="guestbook-key-input"
+                type="password"
+                value={keyDraft}
+                onChange={(e) => setKeyDraft(e.target.value)}
+                placeholder="moderation key"
+                className="bg-[#f1ebdd]/10 border border-dashed border-[#f1ebdd]/40 focus:border-[#e6d99f] outline-none rounded-full px-4 py-2 font-condensed text-xs tracking-[0.1em] text-[#f1ebdd] placeholder:text-[#f1ebdd]/40"
+              />
+              <button
+                data-testid="guestbook-key-save"
+                onClick={saveKey}
+                className="pill !py-2 !px-4"
+              >
+                UNLOCK
+              </button>
+            </div>
+          )}
+          {adminKey && (
+            <div className="inline-flex items-center gap-4 font-condensed text-[9px] tracking-[0.28em] text-[#e6d99f]/80">
+              <span className="border border-dashed border-[#e6d99f]/50 rounded-full px-3 py-1">
+                MODERATING — HIDE/SHOW ANY NOTE
+              </span>
+              <button
+                data-testid="guestbook-exit-moderation"
+                onClick={exitModeration}
+                className="underline underline-offset-2 hover:text-[#f1ebdd] transition-colors"
+              >
+                EXIT
+              </button>
             </div>
           )}
         </div>

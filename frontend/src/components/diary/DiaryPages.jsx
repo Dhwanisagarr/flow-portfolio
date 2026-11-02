@@ -22,12 +22,14 @@ function usePageScroll(root, reduced, build) {
       build(tl);
     }, root);
     return () => ctx.revert();
-  }, [reduced, root, build]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced]);
 }
 
-const PageShell = ({ id, bg, ink, line, margin, children, testid }) => (
+const PageShell = ({ id, bg, ink, line, margin, children, testid, innerRef }) => (
   <section
     id={id}
+    ref={innerRef}
     data-testid={testid}
     className="relative min-h-screen overflow-hidden flex items-center"
     style={{ background: bg, color: ink }}
@@ -39,85 +41,139 @@ const PageShell = ({ id, bg, ink, line, margin, children, testid }) => (
   </section>
 );
 
-/* ---------------- PAGE 1 · INTRO ---------------- */
+/* ---------------- PAGE 1 · INTRO — scroll crawl ---------------- */
+const INTRO_LINES = [
+  { text: "I notice things.", cls: "font-display text-[#3a382f]", size: "clamp(2.3rem, 8vw, 6.5rem)" },
+  { text: "I ask why.", cls: "font-hand text-[#814c57]", size: "clamp(2.9rem, 10vw, 8rem)" },
+  { text: "and I make things.", cls: "font-display text-[#3a382f]", size: "clamp(2.3rem, 8vw, 6.5rem)" },
+  { text: "PRODUCT BUILDER · PRODUCT THINKER · CURIOUS HUMAN", cls: "font-condensed tracking-[0.28em] text-[#596743]", size: "clamp(0.85rem, 2.6vw, 1.35rem)" },
+  { text: "I collect ideas the way some people collect stickers — screenshot folders, notebook margins, voice notes at 2am.", cls: "font-body text-[#3a382f]/85", size: "clamp(1.15rem, 3.4vw, 2.1rem)", max: "max-w-3xl" },
+  { text: "I connect dots across products, people and stories, and turn random thoughts into things you can actually use.", cls: "font-body text-[#3a382f]/85", size: "clamp(1.15rem, 3.4vw, 2.1rem)", max: "max-w-3xl" },
+];
+const INTRO_CHIPS = ["CS GRADUATE", "FINTECH EXPERIENCE", "PRODUCT ENTHUSIAST", "INDEPENDENT BUILDER", "STILL LEARNING, STILL EXPERIMENTING"];
+
 export function PageIntro({ reduced }) {
   const root = useRef(null);
-  usePageScroll(
-    root,
-    reduced,
-    (tl) => {
-      tl.from(".intro-rise", { y: 90, opacity: 0, stagger: 0.07, duration: 0.28, ease: "power2.out" }, 0)
-        .from(
-          ".intro-fall",
-          { y: -170, opacity: 0, rotation: (i) => [-28, 20, -14, 16][i % 4], stagger: 0.05, duration: 0.32 },
-          0.08
-        )
-        .to(".intro-drift", { y: -34, duration: 0.5, ease: "none" }, 0.42)
-        .to(".intro-slide", { x: 46, duration: 0.5, ease: "none" }, 0.42)
-        .fromTo(".intro-zoom", { scale: 0.7 }, { scale: 1.18, duration: 0.5, ease: "none" }, 0.5);
-    }
-  );
+  const n = INTRO_LINES.length;
+  const total = n + 0.4; // + hold time for the final chips block
+
+  useEffect(() => {
+    if (reduced) return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: root.current,
+          start: "top top",
+          end: () => "+=" + Math.round(total * 100) + "%",
+          scrub: 0.7,
+          pin: true,
+          anticipatePin: 1,
+        },
+      });
+      tl.fromTo(".intro-fixed", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "none" }, 0);
+      INTRO_LINES.forEach((_, i) => {
+        tl.fromTo(
+          `.intro-line-${i}`,
+          { yPercent: 135, opacity: 0, scale: 1.045, rotation: 1.2 },
+          { yPercent: 0, opacity: 1, scale: 1, rotation: 0, duration: 0.34, ease: "power3.out" },
+          i
+        );
+        tl.to(
+          `.intro-line-${i}`,
+          { yPercent: -135, opacity: 0, duration: 0.28, ease: "power2.in" },
+          i + 0.64
+        );
+      });
+      tl.fromTo(
+        ".intro-chips",
+        { yPercent: 135, opacity: 0, scale: 1.04 },
+        { yPercent: 0, opacity: 1, scale: 1, duration: 0.3, ease: "power3.out" },
+        n - 1 + 0.7
+      );
+    }, root);
+    return () => ctx.revert();
+  }, [reduced]);
+
+  const lineWrap = reduced
+    ? "relative px-8 sm:px-14 py-10 max-w-5xl"
+    : "absolute inset-0 flex items-center justify-center px-6 will-change-transform";
 
   return (
     <PageShell
       id="about"
+      innerRef={root}
       testid="page-intro"
       bg="#f1ebdd"
       ink="#3a382f"
       line="rgba(89,103,67,0.22)"
       margin="rgba(129,76,87,0.3)"
     >
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-14 py-20">
-        <div className="intro-fall text-[#814c57]">
-          <SketchGirl className="w-20 h-20 sm:w-24 sm:h-24 float-slow" style={{ "--rot": "-4deg" }} />
-          <div className="font-hand text-2xl -rotate-3 mt-1">you found my diary!</div>
-        </div>
-
-        <div className="intro-fall stamp mt-6 text-[#596743]">PAGE 01 — HELLO</div>
-
-        <h2 className="intro-rise mt-6 leading-[1.05]" style={{ fontSize: "clamp(1.9rem, 5vw, 4rem)" }}>
-          <span className="font-display block">I notice things,</span>
-          <span className="font-hand block text-[#814c57]" style={{ fontSize: "clamp(2.2rem, 5.6vw, 4.4rem)" }}>
-            I ask why,
-          </span>
-          <span className="font-display block">and I make things.</span>
-        </h2>
-
-        <div className="intro-rise font-condensed text-xs sm:text-sm tracking-[0.3em] text-[#596743] mt-5">
-          PRODUCT BUILDER · PRODUCT THINKER · CURIOUS HUMAN
-        </div>
-
-        <p className="intro-rise font-body text-sm sm:text-lg text-[#3a382f]/85 max-w-2xl mt-6 leading-relaxed">
-          I collect ideas the way some people collect stickers — screenshot folders, notebook margins,
-          voice notes at 2am. I connect dots across products, people and stories, and turn random
-          thoughts into things you can actually use.
-        </p>
-
-        <div className="intro-rise flex flex-wrap gap-2.5 sm:gap-3 mt-8 text-[#46696c]">
-          {["CS GRADUATE", "FINTECH EXPERIENCE", "PRODUCT ENTHUSIAST", "INDEPENDENT BUILDER", "STILL LEARNING, STILL EXPERIMENTING"].map(
-            (c) => (
-              <span key={c} className="chip">{c}</span>
-            )
-          )}
-        </div>
+      {/* fixed anchors — the scene moves around them */}
+      <div className="intro-fixed absolute top-24 sm:top-16 right-[6%] text-[#dda987] z-10 opacity-0">
+        <SketchGirl className="w-16 h-16 sm:w-24 sm:h-24 float-slow" style={{ "--rot": "-4deg" }} />
+        <div className="font-hand text-xl sm:text-2xl -rotate-3 mt-1 text-[#814c57]">you found my diary!</div>
       </div>
-
-      <div className="intro-fall absolute right-[7%] top-[16%] text-[#dda987] intro-zoom">
-        <PaperPlane className="w-14 h-14 sm:w-20 sm:h-20 float-slow" style={{ "--rot": "14deg" }} />
+      <div className="intro-fixed absolute top-24 sm:top-16 left-6 sm:left-14 z-10 opacity-0">
+        <div className="stamp text-[#596743]">PAGE 01 — HELLO</div>
       </div>
-      <div className="intro-fall absolute right-[16%] bottom-[14%] text-[#5c5b85] intro-drift hidden sm:block">
-        <QuestionMark className="w-10 h-12" />
+      <div className="absolute right-[7%] top-[45%] text-[#dda987] z-10 hidden sm:block">
+        <PaperPlane className="w-12 h-12 sm:w-16 sm:h-16 float-slow" style={{ "--rot": "14deg" }} />
       </div>
-      <div className="intro-fall absolute left-[4%] bottom-[22%] text-[#764d70] intro-slide hidden sm:block">
-        <CoffeeCup className="w-12 h-12" />
-        <Squiggle className="w-16 mt-1" />
+      <div className="absolute left-[5%] bottom-[14%] text-[#764d70] z-10 hidden sm:block">
+        <CoffeeCup className="w-11 h-11 float-slow" style={{ "--rot": "6deg" }} />
       </div>
-      <div className="intro-fall absolute right-[5%] top-[45%] text-[#e6d99f] hidden lg:block">
+      <div className="absolute right-[16%] bottom-[18%] text-[#5c5b85] z-10 hidden lg:block">
+        <QuestionMark className="w-9 h-11" />
+      </div>
+      <div className="absolute left-[7%] top-[30%] text-[#e6d99f] z-10 hidden lg:block">
         <Star className="w-8 h-8" />
       </div>
-      <div className="intro-fall absolute left-[6%] top-[14%] text-[#596743] hidden lg:block">
-        <CurlyArrow className="w-16 h-10 -scale-x-100" />
-      </div>
+
+      {reduced ? (
+        <div className="relative z-10 w-full py-36 space-y-20">
+          {INTRO_LINES.map((l, i) => (
+            <div key={i} className={lineWrap}>
+              <div className={`${l.cls} text-center leading-[1.12] ${l.max || ""}`} style={{ fontSize: l.size }}>
+                {l.text}
+              </div>
+            </div>
+          ))}
+          <div className={lineWrap}>
+            <div className="text-center">
+              <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3 text-[#46696c]">
+                {INTRO_CHIPS.map((c) => (
+                  <span key={c} className="chip">{c}</span>
+                ))}
+              </div>
+              <div className="font-hand text-2xl sm:text-3xl text-[#764d70] mt-6 -rotate-1">
+                still learning, still experimenting.
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="relative z-10 w-full h-screen">
+          {INTRO_LINES.map((l, i) => (
+            <div key={i} className={lineWrap}>
+              <div className={`intro-line-${i} opacity-0 ${l.cls} text-center leading-[1.12] ${l.max || ""}`} style={{ fontSize: l.size }}>
+                {l.text}
+              </div>
+            </div>
+          ))}
+          <div className={lineWrap}>
+            <div className="intro-chips opacity-0 text-center">
+              <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3 text-[#46696c]">
+                {INTRO_CHIPS.map((c) => (
+                  <span key={c} className="chip">{c}</span>
+                ))}
+              </div>
+              <div className="font-hand text-2xl sm:text-3xl text-[#764d70] mt-6 -rotate-1">
+                still learning, still experimenting.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </PageShell>
   );
 }
@@ -148,6 +204,7 @@ export function PageWhatIDo({ reduced }) {
   return (
     <PageShell
       id="doing"
+      innerRef={root}
       testid="page-what-i-do"
       bg="#e6d99f"
       ink="#3f3a2a"
@@ -233,6 +290,7 @@ export function PageObsession({ reduced }) {
   return (
     <PageShell
       id="obsession"
+      innerRef={root}
       testid="page-obsession"
       bg="#5c5b85"
       ink="#f1ebdd"
@@ -302,6 +360,7 @@ export function PageWork({ reduced }) {
   return (
     <PageShell
       id="work-chapter"
+      innerRef={root}
       testid="page-work"
       bg="#4e5c8c"
       ink="#f1ebdd"

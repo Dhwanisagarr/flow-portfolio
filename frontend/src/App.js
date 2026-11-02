@@ -12,6 +12,7 @@ import PageHello from "./components/diary/PageHello";
 import Guestbook from "./components/diary/Guestbook";
 
 gsap.registerPlugin(ScrollTrigger);
+if (process.env.NODE_ENV !== "production") window.__ST = ScrollTrigger;
 
 function App() {
   const [soundOn, setSoundOn] = useState(false);

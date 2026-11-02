@@ -22,7 +22,11 @@ All of Phase 1: hero scene + entrance reveal, zoom-into-book transition with ope
 
 ## Backlog
 - P1: Wire absolute-URL tags (canonical, og:url, og:image, twitter:image, Sitemap:) once the production domain is confirmed — og-image.jpg (1200×630) and sitemap content are ready to go; ask Dhwani for the live domain or custom domain.
-- P2: Real ambient audio track; guestbook moderation (notes are unmoderated public text right now).
+- P2: Real ambient audio track; replace synthesized SOUND ON hum.
+
+## Notes
+- Scroll crawl (2026-11-02): Page 1 intro rebuilt as a pinned scroll-driven sequential sentence reveal (GSAP ScrollTrigger scrub) — six full-width statements each fall in from above, settle, and rise out as the next arrives; scrolling up reverses; fixed anchors (stamp, sketch, doodles) hold while lines change; chips block settles last; reduced-motion shows all lines stacked statically. FIXED pre-existing bug: PageShell never received the section ref so all diary-page pins ran with trigger:null/start:0 — pages were never truly pinned before; now all six pins verified with correct start/end via window.__ST.
+- Guestbook guardrails (2026-11-02): spam filter rejects URLs/emails/promo keywords/keyboard-mash/shouty text with friendly messages; rate limit 3 accepted notes per IP per 10 min (rejections don't consume budget); moderation switch — "MODERATE NOTES" at the page bottom, key = GUESTBOOK_ADMIN_KEY in backend/.env (dhwani-diary-4f7b2c), unlock unlocks per-note HIDE/SHOW, hidden notes dimmed with HIDDEN stamp for the moderator and excluded from the public GET (?all=1&key= shows all; wrong key → 403). Test data wiped — guestbook ships empty.
 
 ## Notes
 - Real content swapped in (2026-11-02): Scrapbook cards = Dahlia, StreakUp, Stack Optimizer, Product Thinking Teardowns (Notion), SignalDesk (real pitch: voice-of-customer tool turning messy feedback into prioritized, evidence-backed product issues), This Diary — all live-linked. Contact = dhwanisagar17@gmail.com, LinkedIn /in/dhwanisagar, GitHub Dhwanisagarr. Work page = FYERS, Apprentice, Jul 2025 – Dec 2025 · 6 mos, Bengaluru · On-site, three real bullets.
