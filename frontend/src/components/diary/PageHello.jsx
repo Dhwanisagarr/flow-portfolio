@@ -55,17 +55,19 @@ export default function PageHello({ reduced }) {
           >
             DHWANISAGAR17@GMAIL.COM
           </a>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap justify-center">
             {[
               { l: "LINKEDIN", t: "linkedin-link", href: "https://www.linkedin.com/in/dhwanisagar/" },
               { l: "GITHUB", t: "github-link", href: "https://github.com/Dhwanisagarr" },
-            ].map(({ l, t, href }) => (
+              { l: "RÉSUMÉ ↓", t: "resume-download", href: "/dhwani-sagar-resume.pdf", dl: true },
+            ].map(({ l, t, href, dl }) => (
               <a
                 key={l}
                 data-testid={t}
                 href={href}
-                target="_blank"
-                rel="noreferrer"
+                target={dl ? undefined : "_blank"}
+                rel={dl ? undefined : "noreferrer"}
+                download={dl ? "Dhwani-Sagar-Resume.pdf" : undefined}
                 aria-label={l}
                 className="chip text-[#764d70] hover:bg-[#764d70] hover:text-[#f1ebdd] transition-colors duration-300"
               >

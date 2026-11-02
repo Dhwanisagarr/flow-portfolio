@@ -11,8 +11,8 @@ const PROJECTS = [
     desc: "Your money is everywhere — an AI-powered builder for India's best fintech apps and money stacks." },
   { n: "04", title: "Product Thinking Teardowns", tag: "ESSAYS · NOTION", rot: "-rotate-1", href: "https://pickled-chair-247.notion.site/Product-Thinking-Teardowns-3e0900d91be98010a138e2571183e521",
     desc: "Teardowns and case studies on user problems, product decisions, and how good products could be better." },
-  { n: "05", title: "SignalDesk", tag: "LIVE TOOL · STREAMLIT", rot: "rotate-2", href: "https://signaldesk.streamlit.app/",
-    desc: "The newest experiment, built and running live on Streamlit — open it up and take it for a spin." },
+  { n: "05", title: "SignalDesk", tag: "VOICE OF CUSTOMER · STREAMLIT", rot: "rotate-2", href: "https://signaldesk.streamlit.app/",
+    desc: "Turns messy customer feedback into prioritized product issues, backed by evidence — a voice-of-customer tool for PMs." },
   { n: "06", title: "This Diary", tag: "BUILD IN PUBLIC", rot: "-rotate-2", href: null,
     desc: "The website you are inside right now — written, illustrated & coded by me." },
 ];

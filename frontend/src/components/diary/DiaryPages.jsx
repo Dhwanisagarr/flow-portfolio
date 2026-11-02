@@ -339,6 +339,15 @@ export function PageWork({ reduced }) {
         <p className="wk-rise font-hand text-2xl sm:text-3xl text-[#e6d99f] mt-7 rotate-1">
           numbers + stories = my kind of maths.
         </p>
+
+        <a
+          data-testid="resume-download"
+          href="/dhwani-sagar-resume.pdf"
+          download="Dhwani-Sagar-Resume.pdf"
+          className="wk-rise inline-flex items-center gap-3 mt-7 font-condensed text-xs sm:text-sm tracking-[0.24em] bg-[#e6d99f] text-[#383556] px-7 py-3.5 rounded-full shadow-[0_12px_30px_rgba(20,18,40,0.35)] hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(20,18,40,0.45)] transition-all duration-300"
+        >
+          TAKE MY RÉSUMÉ WITH YOU &darr;
+        </a>
       </div>
 
       <div className="wk-fall absolute right-[6%] top-[14%] text-[#e6d99f]">
