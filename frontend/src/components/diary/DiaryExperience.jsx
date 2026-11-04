@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import TimelineSquiggle from "./TimelineSquiggle";
 import ProjectCaseStudyModal from "./ProjectCaseStudyModal";
@@ -149,6 +150,69 @@ const CHAPTER_KEYS = [
 
 const PROJECTS = PROJECTS_DATA;
 
+const WORK_EXPERIENCES = [
+  {
+    id: "fyers",
+    company: "FYERS",
+    badge: "FINTECH · APPRENTICE",
+    role: "APPRENTICE · JUL 2025 – DEC 2025",
+    location: "BENGALURU, INDIA · ON-SITE · 6 MOS",
+    tape: "✦ ✦ ✦ ✦ ✦",
+    bullets: [
+      "Collaborated with product, engineering & analytics on onboarding and signup flows.",
+      "Supported event tracking validation across GA, CleverTap and AppsFlyer.",
+      "Executed API and workflow validations using Postman and cURL before releases.",
+    ],
+    chapter: "CHAPTER 01",
+    theme: "fyers",
+  },
+  {
+    id: "zidio",
+    company: "ZIDIO DEVELOPMENT",
+    badge: "WEB DEV · REMOTE",
+    role: "WEB DEVELOPER · NOV 2023 – DEC 2023",
+    location: "BENGALURU, INDIA · REMOTE",
+    tape: "● ● ● ● ●",
+    bullets: [
+      "Built responsive web application interfaces and interactive front-end components.",
+      "Translated Figma design specifications into clean, accessible, semantic code.",
+      "Optimized cross-browser performance and enhanced user workflow responsiveness.",
+    ],
+    chapter: "CHAPTER 02",
+    theme: "zidio",
+  },
+  {
+    id: "dinesh",
+    company: "DINESH IT SYSTEMS",
+    badge: "SECURITIES & IT · ON-SITE",
+    role: "INTERN · OCT 2023 – NOV 2023",
+    location: "KANNUR, INDIA · ON-SITE",
+    clip: true,
+    bullets: [
+      "Assisted senior engineering team with testing core enterprise software modules and securities systems.",
+      "Documented functional system requirements, workflows, and edge test cases.",
+      "Collaborated on day-to-day IT systems troubleshooting and internal tooling.",
+    ],
+    chapter: "CHAPTER 03",
+    theme: "dinesh",
+  },
+  {
+    id: "salesforce",
+    company: "SALESFORCE",
+    badge: "CRM · VIRTUAL",
+    role: "SALESFORCE ADMINISTRATOR",
+    location: "REMOTE · VIRTUAL INTERNSHIP",
+    grid: true,
+    bullets: [
+      "Configured Salesforce standard & custom objects, validation rules, and page layouts.",
+      "Designed automated workflow rules, process builders, and user permission sets.",
+      "Built custom reports and executive dashboards for pipeline tracking.",
+    ],
+    chapter: "CHAPTER 04",
+    theme: "salesforce",
+  },
+];
+
 export default function DiaryExperience({ onNav, reduced }) {
   const containerRef = useRef(null);
   const workTrackRef = useRef(null);
@@ -156,6 +220,166 @@ export default function DiaryExperience({ onNav, reduced }) {
   const [activeChapter, setActiveChapter] = useState("HELLO");
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeProjectModal, setActiveProjectModal] = useState(null);
+
+  // Framer-Style CardStack State for Page 2 (The Work Chapter)
+  const [stackCards, setStackCards] = useState(WORK_EXPERIENCES);
+  const [droppingId, setDroppingId] = useState(null);
+  const [dropCount, setDropCount] = useState(0);
+  const [hasCompletedLoop, setHasCompletedLoop] = useState(false);
+
+  const isDroppingRef = useRef(false);
+  const dropCountRef = useRef(0);
+  const hasCompletedLoopRef = useRef(false);
+  const lastWheelTimeRef = useRef(0);
+
+  dropCountRef.current = dropCount;
+  hasCompletedLoopRef.current = hasCompletedLoop;
+
+  // Drops front card down, cycles to end, and tracks loop return
+  const dropTopCard = () => {
+    if (isDroppingRef.current) return;
+    isDroppingRef.current = true;
+
+    const top = stackCards[0];
+    setDroppingId(top.id);
+
+    setTimeout(() => {
+      setStackCards((prev) => [...prev.slice(1), prev[0]]);
+      setDroppingId(null);
+      setDropCount((c) => {
+        const next = c + 1;
+        if (next >= 4) {
+          setHasCompletedLoop(true);
+          hasCompletedLoopRef.current = true;
+        }
+        return next;
+      });
+      setTimeout(() => {
+        isDroppingRef.current = false;
+      }, 120);
+    }, 320);
+  };
+
+  // Reverses card stack if user scrolls backward
+  const cyclePrevCard = () => {
+    if (isDroppingRef.current) return;
+    isDroppingRef.current = true;
+    setStackCards((prev) => [prev[prev.length - 1], ...prev.slice(0, prev.length - 1)]);
+    setDropCount((c) => {
+      const next = Math.max(0, c - 1);
+      if (next < 4) {
+        setHasCompletedLoop(false);
+        hasCompletedLoopRef.current = false;
+      }
+      return next;
+    });
+    setTimeout(() => {
+      isDroppingRef.current = false;
+    }, 280);
+  };
+
+  // Advances smoothly to Page 3 (Selected Work) after card loop
+  const advanceToNextPage = () => {
+    if (typeof window === "undefined") return;
+    if (onNav) {
+      onNav("PROJECTS");
+      return;
+    }
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const target = maxScroll * 0.67;
+    if (window.__lenis) {
+      window.__lenis.scrollTo(target, { duration: 1.4 });
+    } else {
+      window.scrollTo({ top: target, behavior: "smooth" });
+    }
+  };
+
+  // Wheel and touch listener for sticky Page 2 card dropping
+  useEffect(() => {
+    if (typeof window === "undefined" || reduced) return;
+
+    let touchStartY = 0;
+
+    const onWheel = (e) => {
+      // Check if user is currently viewing Page 2 (The Work Chapter)
+      const isWorkSection =
+        activeChapter === "WORK" || (scrollProgress >= 0.38 && scrollProgress <= 0.58);
+      if (!isWorkSection) return;
+
+      const now = Date.now();
+      if (now - lastWheelTimeRef.current < 420) {
+        if (!hasCompletedLoopRef.current) {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      // Scrolling down: drop notes one by one
+      if (e.deltaY > 18) {
+        if (!hasCompletedLoopRef.current) {
+          // Page stays STUCK! Sticky notes fall out one by one
+          e.preventDefault();
+          lastWheelTimeRef.current = now;
+          dropTopCard();
+        } else {
+          // All 4 notes dropped and returned to first note -> animate to next page
+          e.preventDefault();
+          lastWheelTimeRef.current = now;
+          advanceToNextPage();
+        }
+      } else if (e.deltaY < -18) {
+        // Scrolling up: reverse notes or allow scroll back to Page 1
+        if (dropCountRef.current > 0) {
+          e.preventDefault();
+          lastWheelTimeRef.current = now;
+          cyclePrevCard();
+        }
+      }
+    };
+
+    const onTouchStart = (e) => {
+      if (e.touches && e.touches[0]) {
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      const isWorkSection =
+        activeChapter === "WORK" || (scrollProgress >= 0.38 && scrollProgress <= 0.58);
+      if (!isWorkSection) return;
+
+      if (!e.changedTouches || !e.changedTouches[0]) return;
+      const touchEndY = e.changedTouches[0].clientY;
+      const diffY = touchStartY - touchEndY;
+      const now = Date.now();
+      if (now - lastWheelTimeRef.current < 420) return;
+
+      if (diffY > 40) {
+        lastWheelTimeRef.current = now;
+        if (!hasCompletedLoopRef.current) {
+          dropTopCard();
+        } else {
+          advanceToNextPage();
+        }
+      } else if (diffY < -40) {
+        if (dropCountRef.current > 0) {
+          lastWheelTimeRef.current = now;
+          cyclePrevCard();
+        }
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChapter, scrollProgress, reduced]);
 
   useEffect(() => {
     if (reduced) return;
@@ -442,42 +666,34 @@ export default function DiaryExperience({ onNav, reduced }) {
         )
         .fromTo(
           ".work-title-1",
-          { opacity: 0, x: -140 },
-          { opacity: 1, x: 0, duration: 1.2, ease: "power3.out" },
+          { opacity: 0, x: -120 },
+          { opacity: 1, x: 0, duration: 1.0, ease: "power3.out" },
           33.3
         )
         .fromTo(
           ".work-title-2",
-          { opacity: 0, x: 140 },
-          { opacity: 1, x: 0, duration: 1.2, ease: "power3.out" },
+          { opacity: 0, x: 120 },
+          { opacity: 1, x: 0, duration: 1.0, ease: "power3.out" },
           33.5
         )
         .fromTo(
           ".work-title-3",
-          { opacity: 0, y: 60, scale: 0.8 },
-          { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "back.out(1.6)" },
+          { opacity: 0, y: 50, scale: 0.8 },
+          { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: "back.out(1.6)" },
           33.7
+        )
+        .fromTo(
+          ".work-card-stack",
+          { opacity: 0, y: 50, scale: 0.9 },
+          { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out" },
+          33.4
         );
 
-      // Glide the 4 experience cards smoothly across horizontally without any zoom
-      masterTl.to(
-        workTrackRef.current,
-        {
-          x: () => {
-            const track = workTrackRef.current;
-            if (!track) return 0;
-            const scrollDist = track.scrollWidth - window.innerWidth + 80;
-            return -Math.max(scrollDist, 0);
-          },
-          ease: "none",
-          duration: 13,
-        },
-        34.5
-      );
-
-      // All 4 cards have been read, smoothly pass away to reveal Selected Work!
+      // Page 2 (The Work Chapter) stays firmly pinned, stuck, and interactive
+      // Framer Motion handles tap & drag and scroll drop physics for the sticky notes
       masterTl
-        .to(".work-layer", { opacity: 0, pointerEvents: "none", duration: 1.2, ease: "power2.in" }, 48.5);
+        .to(".work-layer", { opacity: 1, duration: 15.0 }, 33.4)
+        .to(".work-layer", { opacity: 0, pointerEvents: "none", duration: 1.2, ease: "power2.in" }, 48.6);
 
       // ---------------------------------------------------------------------
       // 4. SCRAPBOOK (Selected Work Horizontal Gallery) (Progress ~0.65 -> 0.88)
@@ -903,22 +1119,19 @@ export default function DiaryExperience({ onNav, reduced }) {
         </div>
 
         {/* ================================================================= */}
-        {/* LAYER 2: PAGE WORK (4 Experience Cards Horizontal Stream)         */}
+        {/* LAYER 2: PAGE WORK (Framer-style CardStack Experience)            */}
         {/* ================================================================= */}
-        <div className="work-layer absolute inset-0 z-40 flex items-center justify-start opacity-0 pointer-events-none will-change-transform text-[#f1ebdd] overflow-hidden">
-          <div
-            ref={workTrackRef}
-            className="flex items-center gap-6 sm:gap-8 lg:gap-10 pl-6 sm:pl-14 lg:pl-20 pr-16 sm:pr-28 will-change-transform h-full py-8 sm:py-12"
-          >
-            {/* Left Hero Title Column */}
-            <div className="shrink-0 w-[84vw] sm:w-[350px] lg:w-[420px] flex flex-col justify-center select-none pr-4 sm:pr-8">
-              <div className="stamp !bg-[#e6d99f] !text-[#383556] text-[10px] w-fit mb-3">
+        <div className="work-layer absolute inset-0 z-40 flex items-center justify-center opacity-0 pointer-events-none will-change-transform text-[#f1ebdd] overflow-hidden">
+          <div className="w-full h-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-12 pt-14 sm:pt-18 lg:pt-0 pb-6 sm:pb-10">
+            {/* Left Column: Heading, intro, and resume */}
+            <div className="work-intro-col w-full lg:w-[38%] shrink-0 flex flex-col justify-center select-none pr-0 lg:pr-6 z-20">
+              <div className="stamp !bg-[#e6d99f] !text-[#383556] text-[9.5px] sm:text-[10px] w-fit">
                 PAGE 02 — THE WORK CHAPTER
               </div>
 
               <h2
-                className="font-cesty text-white leading-[1.02] tracking-normal"
-                style={{ fontSize: "clamp(2.6rem, 5.5vw, 4.4rem)" }}
+                className="mt-2.5 sm:mt-4 leading-[1.02] text-white font-cesty"
+                style={{ fontSize: "clamp(2.2rem, 5.0vw, 4.2rem)" }}
               >
                 <span className="work-title-1 font-cesty block will-change-transform text-white">
                   Well,
@@ -931,24 +1144,28 @@ export default function DiaryExperience({ onNav, reduced }) {
                 </span>
               </h2>
 
-              <p className="font-cesty-sub text-xs sm:text-[13px] tracking-[0.16em] uppercase text-white/90 mt-4 leading-relaxed max-w-sm font-semibold">
+              <p className="font-cesty-sub text-[11px] sm:text-[13px] tracking-[0.14em] sm:tracking-[0.16em] uppercase text-white/90 mt-2.5 sm:mt-4 leading-relaxed max-w-sm font-semibold">
                 A few teams, interesting problems, lessons learned, and things I&rsquo;ve helped bring to life.
               </p>
 
-              <div className="mt-5 flex flex-col gap-2">
+              <div className="mt-4 sm:mt-5 flex flex-col gap-1.5 sm:gap-2">
                 <a
                   href="/dhwani-sagar-resume.pdf"
                   download="Dhwani-Sagar-Resume.pdf"
-                  className="font-cesty-sub text-[11px] sm:text-xs tracking-[0.2em] text-[#e6d99f] hover:text-white underline underline-offset-4 transition-colors cursor-pointer w-fit font-semibold uppercase"
+                  className="font-cesty-sub text-[10.5px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] text-[#e6d99f] hover:text-white underline underline-offset-4 transition-colors cursor-pointer w-fit font-semibold uppercase"
                 >
                   TAKE MY RÉSUMÉ WITH YOU &darr;
                 </a>
-                <span className="font-cesty-sub text-xs sm:text-sm tracking-[0.2em] uppercase text-[#e6d99f] mt-1 font-semibold flex items-center gap-1.5">
-                  SCROLL TO GLIDE THROUGH WORK &rarr;
-                </span>
+                <button
+                  type="button"
+                  onClick={hasCompletedLoop ? advanceToNextPage : dropTopCard}
+                  className="font-cesty-sub text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase text-[#e6d99f] hover:text-white mt-0.5 sm:mt-1 font-semibold flex items-center gap-1.5 cursor-pointer transition-colors text-left"
+                >
+                  {hasCompletedLoop ? "ALL 4 NOTES READ · ENTER SELECTED WORK →" : "PULL DOWN / SCROLL TO DROP ↓"}
+                </button>
               </div>
 
-              <div className="mt-6 flex items-center gap-4">
+              <div className="mt-4 sm:mt-6 flex items-center gap-4">
                 <InteractiveDino textColor="text-[#e6d99f]/85" />
                 <div className="text-[#e6d99f]/45 hidden sm:block -rotate-6">
                   <DoodleBackpack className="w-9 h-9" />
@@ -956,198 +1173,148 @@ export default function DiaryExperience({ onNav, reduced }) {
               </div>
             </div>
 
-            {/* Card 1: FYERS */}
-            <div className="work-note-fyers shrink-0 relative w-[82vw] sm:w-[340px] lg:w-[380px] h-[440px] sm:h-[480px] bg-[#e6d99f] text-[#2c2720] rounded-sm p-5 sm:p-6 shadow-[0_20px_45px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1 select-none border-b-4 border-dashed border-[#c4b77e]">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-32 h-6 bg-[#4a3e2a]/85 rounded-xs shadow-sm flex items-center justify-center text-[10px] text-[#e6d99f]/80 tracking-widest font-mono">
-                ✦ ✦ ✦ ✦ ✦
-              </div>
-              <div className="absolute left-2 top-8 bottom-8 flex flex-col justify-between pointer-events-none">
-                {[1, 2, 3, 4, 5].map((h) => (
-                  <span key={h} className="w-2.5 h-2.5 rounded-full bg-[#383556]/50 shadow-inner block" />
-                ))}
+            {/* Right Stage: Framer CardStack of 4 Sticky Notes */}
+            <div className="relative w-full lg:w-[62%] h-[54vh] sm:h-[64vh] lg:h-[76vh] flex items-center justify-center">
+              <div className="absolute -top-4 right-8 text-[#e6d99f]/35 hidden sm:block rotate-6 pointer-events-none">
+                <DoodleCalculator className="w-10 h-10" />
               </div>
 
-              <div className="pl-4 pt-1">
-                <div className="flex items-baseline justify-between gap-1 border-b border-[#2c2720]/15 pb-2">
-                  <div className="font-condensed font-bold tracking-[0.16em] text-xl sm:text-2xl text-[#2c2720]">
-                    FYERS
-                  </div>
-                  <span className="font-condensed text-[8.5px] sm:text-[10px] tracking-[0.18em] bg-[#2c2720]/10 px-2 py-0.5 rounded text-[#2c2720] font-semibold whitespace-nowrap">
-                    FINTECH · APPRENTICE
-                  </span>
-                </div>
+              {/* CardStack Container: Pinned 3D stack with peek-above offsets */}
+              <div
+                className="work-card-stack relative w-[88vw] max-w-[340px] sm:max-w-[400px] lg:max-w-[460px] h-[390px] sm:h-[440px] lg:h-[480px] select-none"
+                style={{ perspective: "1200px" }}
+              >
+                {stackCards.map((card, i) => {
+                  const isFront = i === 0;
+                  const isDropping = card.id === droppingId;
+                  const brightness = Math.max(0.72, 1 - i * 0.08);
+                  const baseZ = isDropping ? 25 : stackCards.length - i;
+                  const yOffset = i * -24;
 
-                <div className="font-condensed text-[11px] sm:text-xs tracking-[0.16em] text-[#554b35] mt-2 font-semibold">
-                  APPRENTICE · JUL 2025 – DEC 2025
-                </div>
-                <div className="font-condensed text-[9.5px] sm:text-[10.5px] tracking-[0.15em] text-[#554b35]/80 mt-0.5">
-                  BENGALURU, INDIA · ON-SITE · 6 MOS
-                </div>
+                  return (
+                    <motion.div
+                      key={card.id}
+                      className="absolute inset-0 w-full h-full bg-[#e6d99f] text-[#2c2720] rounded-lg p-4 sm:p-5 lg:p-6 shadow-[0_22px_55px_rgba(0,0,0,0.5)] flex flex-col justify-between select-none will-change-transform border-b-4 border-dashed border-[#c4b77e]"
+                      style={{
+                        zIndex: baseZ,
+                        cursor: isFront ? "grab" : "default",
+                        touchAction: isFront ? "none" : "auto",
+                        ...(card.grid
+                          ? {
+                              backgroundImage:
+                                "linear-gradient(to right, rgba(44,39,32,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(44,39,32,0.07) 1px, transparent 1px)",
+                              backgroundSize: "14px 14px",
+                            }
+                          : {}),
+                      }}
+                      initial={false}
+                      animate={
+                        isDropping
+                          ? {
+                              y: 640,
+                              rotate: 8,
+                              opacity: 0,
+                              scale: 0.95,
+                              filter: "brightness(0.9)",
+                              zIndex: 30,
+                            }
+                          : {
+                              y: yOffset,
+                              rotate: card.id === "zidio" ? 1 : card.id === "dinesh" ? -1 : 0,
+                              scale: 1 - i * 0.055,
+                              filter: `brightness(${brightness})`,
+                              opacity: 1,
+                              zIndex: baseZ,
+                            }
+                      }
+                      transition={{
+                        type: "spring",
+                        stiffness: 190,
+                        damping: 24,
+                      }}
+                      drag={isFront ? "y" : false}
+                      dragConstraints={{ top: 0, bottom: 0 }}
+                      dragElastic={0.65}
+                      dragMomentum={false}
+                      whileDrag={
+                        isFront
+                          ? {
+                              cursor: "grabbing",
+                              scale: 1.03,
+                              rotate: 2.5,
+                              zIndex: 35,
+                            }
+                          : {}
+                      }
+                      onDragEnd={(e, info) => {
+                        if (info.offset.y > 45 || info.velocity.y > 180) {
+                          dropTopCard();
+                        }
+                      }}
+                      onClick={() => {
+                        if (isFront && !isDropping) {
+                          dropTopCard();
+                        }
+                      }}
+                    >
+                      {/* Card Background / Tape Decorations */}
+                      {card.tape && (
+                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-32 h-6 bg-[#4a3e2a]/85 rounded-xs shadow-sm flex items-center justify-center text-[10px] text-[#e6d99f]/80 tracking-widest font-mono pointer-events-none">
+                          {card.tape}
+                        </div>
+                      )}
 
-                <ul className="mt-4 space-y-2.5 font-body text-xs sm:text-[13px] leading-relaxed font-normal text-[#2c2720]/85">
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Collaborated with product, engineering &amp; analytics on onboarding and signup flows.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Supported event tracking validation across GA, CleverTap and AppsFlyer.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Executed API and workflow validations using Postman and cURL before releases.</span>
-                  </li>
-                </ul>
-              </div>
+                      {card.clip && (
+                        <div className="absolute -top-3.5 left-6 w-5 h-11 border-2 border-[#2c2720]/80 rounded-full shadow-sm bg-transparent pointer-events-none" />
+                      )}
 
-              <div className="pl-4 pt-2 border-t border-[#2c2720]/10 text-[9.5px] font-condensed tracking-[0.2em] text-[#554b35] flex items-center justify-between">
-                <span>CHAPTER 01</span>
-                <span>ACTIVE RECORD</span>
-              </div>
-            </div>
+                      {card.grid && (
+                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-5 h-11 border-2 border-[#2c2720]/80 rounded-full shadow-sm bg-transparent pointer-events-none" />
+                      )}
 
-            {/* Card 2: ZIDIO DEVELOPMENT */}
-            <div className="work-note-zidio shrink-0 relative w-[82vw] sm:w-[340px] lg:w-[380px] h-[440px] sm:h-[480px] bg-[#e6d99f] text-[#2c2720] rounded-sm p-5 sm:p-6 shadow-[0_20px_45px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1 select-none">
-              <div className="absolute -inset-1 bg-[#d4c688] -z-10 rounded-sm rotate-1 shadow-md pointer-events-none" />
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-32 h-6 bg-[#4a3e2a]/85 rounded-xs shadow-sm flex items-center justify-center text-[10px] text-[#e6d99f]/80 tracking-widest font-mono">
-                ● ● ● ● ●
-              </div>
-              <div className="absolute left-2 top-8 bottom-8 flex flex-col justify-between pointer-events-none">
-                {[1, 2, 3, 4, 5].map((h) => (
-                  <span key={h} className="w-2.5 h-2.5 rounded-full bg-[#383556]/50 shadow-inner block" />
-                ))}
-              </div>
+                      {/* Hole punches on left for notebook aesthetic */}
+                      {(card.id === "fyers" || card.id === "zidio") && (
+                        <div className="absolute left-2 top-8 bottom-8 flex flex-col justify-between pointer-events-none">
+                          {[1, 2, 3, 4, 5].map((h) => (
+                            <span key={h} className="w-2.5 h-2.5 rounded-full bg-[#383556]/50 shadow-inner block" />
+                          ))}
+                        </div>
+                      )}
 
-              <div className="pl-4 pt-1">
-                <div className="flex items-baseline justify-between gap-1 border-b border-[#2c2720]/15 pb-2">
-                  <div className="font-condensed font-bold tracking-[0.16em] text-xl sm:text-2xl text-[#2c2720]">
-                    ZIDIO DEVELOPMENT
-                  </div>
-                  <span className="font-condensed text-[8.5px] sm:text-[10px] tracking-[0.18em] bg-[#2c2720]/10 px-2 py-0.5 rounded text-[#2c2720] font-semibold whitespace-nowrap">
-                    WEB DEV · REMOTE
-                  </span>
-                </div>
+                      <div className={`pt-1 ${card.id === "fyers" || card.id === "zidio" ? "pl-4" : ""}`}>
+                        <div className="flex items-baseline justify-between gap-1 border-b border-[#2c2720]/15 pb-2">
+                          <div className="font-condensed font-bold tracking-[0.16em] text-lg sm:text-2xl text-[#2c2720]">
+                            {card.company}
+                          </div>
+                          <span className="font-condensed text-[8.5px] sm:text-[10px] tracking-[0.18em] bg-[#2c2720]/10 px-2 py-0.5 rounded text-[#2c2720] font-semibold whitespace-nowrap">
+                            {card.badge}
+                          </span>
+                        </div>
 
-                <div className="font-condensed text-[11px] sm:text-xs tracking-[0.16em] text-[#554b35] mt-2 font-semibold">
-                  WEB DEVELOPER · NOV 2023 – DEC 2023
-                </div>
-                <div className="font-condensed text-[9.5px] sm:text-[10.5px] tracking-[0.15em] text-[#554b35]/80 mt-0.5">
-                  BENGALURU, INDIA · REMOTE
-                </div>
+                        <div className="font-condensed text-[10.5px] sm:text-xs tracking-[0.16em] text-[#554b35] mt-1.5 sm:mt-2 font-semibold">
+                          {card.role}
+                        </div>
+                        <div className="font-condensed text-[9px] sm:text-[10.5px] tracking-[0.15em] text-[#554b35]/80 mt-0.5">
+                          {card.location}
+                        </div>
 
-                <ul className="mt-4 space-y-2.5 font-body text-xs sm:text-[13px] leading-relaxed font-normal text-[#2c2720]/85">
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Built responsive web application interfaces and interactive front-end components.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Translated Figma design specifications into clean, accessible, semantic code.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Optimized cross-browser performance and enhanced user workflow responsiveness.</span>
-                  </li>
-                </ul>
-              </div>
+                        <ul className="mt-2.5 sm:mt-4 space-y-2 sm:space-y-2.5 font-body text-[11px] sm:text-xs lg:text-[13px] leading-relaxed font-normal text-[#2c2720]/85">
+                          {card.bullets.map((b, idx) => (
+                            <li key={idx} className="flex gap-2">
+                              <span className="text-[#6e6347] font-bold">&bull;</span>
+                              <span>{b}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
 
-              <div className="pl-4 pt-2 border-t border-[#2c2720]/10 text-[9.5px] font-condensed tracking-[0.2em] text-[#554b35] flex items-center justify-between">
-                <span>CHAPTER 02</span>
-                <span>ACTIVE RECORD</span>
-              </div>
-            </div>
-
-            {/* Card 3: DINESH IT SYSTEMS / SECURITIES */}
-            <div className="work-note-dinesh shrink-0 relative w-[82vw] sm:w-[340px] lg:w-[380px] h-[440px] sm:h-[480px] bg-[#e6d99f] text-[#2c2720] rounded-sm p-5 sm:p-6 shadow-[0_20px_45px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1 select-none">
-              <div className="absolute -inset-1.5 bg-[#c4b77e] -z-10 rounded-sm -rotate-1 shadow-md pointer-events-none" />
-              <div className="absolute -top-3.5 left-6 w-5 h-11 border-2 border-[#2c2720]/80 rounded-full shadow-sm bg-transparent pointer-events-none" />
-
-              <div className="pt-1">
-                <div className="flex items-baseline justify-between gap-1 border-b border-[#2c2720]/15 pb-2">
-                  <div className="font-condensed font-bold tracking-[0.16em] text-xl sm:text-2xl text-[#2c2720]">
-                    DINESH IT SYSTEMS
-                  </div>
-                  <span className="font-condensed text-[8px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.18em] bg-[#2c2720]/10 px-2 py-0.5 rounded text-[#2c2720] font-semibold whitespace-nowrap">
-                    SECURITIES &amp; IT · ON-SITE
-                  </span>
-                </div>
-
-                <div className="font-condensed text-[11px] sm:text-xs tracking-[0.16em] text-[#554b35] mt-2 font-semibold">
-                  INTERN · OCT 2023 – NOV 2023
-                </div>
-                <div className="font-condensed text-[9.5px] sm:text-[10.5px] tracking-[0.15em] text-[#554b35]/80 mt-0.5">
-                  KANNUR, INDIA · ON-SITE
-                </div>
-
-                <ul className="mt-4 space-y-2.5 font-body text-xs sm:text-[13px] leading-relaxed font-normal text-[#2c2720]/85">
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Assisted senior engineering team with testing core enterprise software modules and securities systems.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Documented functional system requirements, workflows, and edge test cases.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Collaborated on day-to-day IT systems troubleshooting and internal tooling.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="pt-2 border-t border-[#2c2720]/10 text-[9.5px] font-condensed tracking-[0.2em] text-[#554b35] flex items-center justify-between">
-                <span>CHAPTER 03</span>
-                <span>ACTIVE RECORD</span>
-              </div>
-            </div>
-
-            {/* Card 4: SALESFORCE */}
-            <div
-              className="work-note-salesforce shrink-0 relative w-[82vw] sm:w-[340px] lg:w-[380px] h-[440px] sm:h-[480px] bg-[#e6d99f] text-[#2c2720] rounded-sm p-5 sm:p-6 shadow-[0_20px_45px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1 select-none"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, rgba(44,39,32,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(44,39,32,0.07) 1px, transparent 1px)",
-                backgroundSize: "14px 14px",
-              }}
-            >
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-5 h-11 border-2 border-[#2c2720]/80 rounded-full shadow-sm bg-transparent pointer-events-none" />
-
-              <div className="pt-1">
-                <div className="flex items-baseline justify-between gap-1 border-b border-[#2c2720]/15 pb-2">
-                  <div className="font-condensed font-bold tracking-[0.16em] text-xl sm:text-2xl text-[#2c2720]">
-                    SALESFORCE
-                  </div>
-                  <span className="font-condensed text-[8.5px] sm:text-[10px] tracking-[0.18em] bg-[#2c2720]/10 px-2 py-0.5 rounded text-[#2c2720] font-semibold whitespace-nowrap">
-                    CRM · VIRTUAL
-                  </span>
-                </div>
-
-                <div className="font-condensed text-[11px] sm:text-xs tracking-[0.16em] text-[#554b35] mt-2 font-semibold">
-                  SALESFORCE ADMINISTRATOR
-                </div>
-                <div className="font-condensed text-[9.5px] sm:text-[10.5px] tracking-[0.15em] text-[#554b35]/80 mt-0.5">
-                  REMOTE · VIRTUAL INTERNSHIP
-                </div>
-
-                <ul className="mt-4 space-y-2.5 font-body text-xs sm:text-[13px] leading-relaxed font-normal text-[#2c2720]/85">
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Configured Salesforce standard &amp; custom objects, validation rules, and page layouts.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Designed automated workflow rules, process builders, and user permission sets.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#6e6347] font-bold">&bull;</span>
-                    <span>Built custom reports and executive dashboards for pipeline tracking.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="pt-2 border-t border-[#2c2720]/10 text-[9.5px] font-condensed tracking-[0.2em] text-[#554b35] flex items-center justify-between">
-                <span>CHAPTER 04</span>
-                <span>ACTIVE RECORD</span>
+                      <div className={`pt-2 border-t border-[#2c2720]/10 text-[9.5px] font-condensed tracking-[0.2em] text-[#554b35] flex items-center justify-between ${card.id === "fyers" || card.id === "zidio" ? "pl-4" : ""}`}>
+                        <span>{card.chapter}</span>
+                        <span>{isFront ? "PULL DOWN TO DROP ↓" : "ACTIVE RECORD"}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </div>
