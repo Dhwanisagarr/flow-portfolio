@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import {
   PaperPlane, Star, CurlyArrow, Lightbulb, CoffeeCup,
-  QuestionMark, Heart, Squiggle, SketchGirl, LoopArrow, Sparkle, Notebook,
+  QuestionMark, Heart, Squiggle, LoopArrow, Sparkle, Notebook,
 } from "./doodles";
 
 function usePageScroll(root, reduced, build) {
@@ -43,14 +43,14 @@ const PageShell = ({ id, bg, ink, line, margin, children, testid, innerRef }) =>
 
 /* ---------------- PAGE 1 · INTRO — scroll crawl ---------------- */
 const INTRO_STATEMENTS = [
+  {
+    isIntroHeadline: true,
+    title: "Hi, I'm Dhwani Sagar",
+    subtitle: "product builder and product designer",
+  },
   { lines: ["I NOTICE", "THINGS."], color: "text-[#3a382f]" },
   { lines: ["I ASK WHY."], color: "text-[#814c57]" },
   { lines: ["AND I MAKE", "THINGS."], color: "text-[#3a382f]" },
-  {
-    lines: ["PRODUCT BUILDER · PRODUCT THINKER", "CURIOUS HUMAN"],
-    color: "text-[#596743]",
-    label: true,
-  },
 ];
 const INTRO_PARAS = [
   "I collect ideas the way some people collect stickers — screenshot folders, notebook margins, voice notes at 2am.",
@@ -112,6 +112,7 @@ export function PageIntro({ reduced }) {
       );
     }, root);
     return () => ctx.revert();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduced]);
 
   const lineWrap = reduced
@@ -137,7 +138,6 @@ export function PageIntro({ reduced }) {
     >
       {/* fixed anchors — the scene moves around them */}
       <div className="intro-fixed absolute top-24 sm:top-16 right-[6%] text-[#dda987] z-10 opacity-0">
-        <SketchGirl className="w-16 h-16 sm:w-24 sm:h-24 float-slow" style={{ "--rot": "-4deg" }} />
         <div className="font-hand text-sm sm:text-xl -rotate-3 mt-1 text-[#814c57] tracking-[0.06em]">YOU FOUND MY DIARY!</div>
       </div>
       <div className="intro-fixed absolute top-24 sm:top-16 left-4 sm:left-14 z-10 opacity-0">
@@ -160,11 +160,36 @@ export function PageIntro({ reduced }) {
         <div className="relative z-10 w-full py-36 space-y-20">
           {INTRO_STATEMENTS.map((s, i) => (
             <div key={i} className={lineWrap}>
-              <div className={`font-display text-center leading-[0.84] ${s.color} ${s.label ? "tracking-[0.14em]" : ""}`} style={{ fontSize: s.label ? "clamp(0.95rem, 2.6vw, 1.7rem)" : "clamp(3.2rem, 15.5vw, 11rem)" }}>
-                {s.lines.map((ln, k) => (
-                  <span key={k} className="block">{ln}</span>
-                ))}
-              </div>
+              {s.isIntroHeadline ? (
+                <div className="text-center flex flex-col items-center justify-center px-4">
+                  <h2
+                    className="font-creative text-[#3a382f] tracking-tight drop-shadow-[0_2px_8px_rgba(58,56,47,0.12)]"
+                    style={{
+                      fontSize: "clamp(2.4rem, 6.8vw, 5.2rem)",
+                      fontWeight: 800,
+                      lineHeight: 1.05,
+                    }}
+                  >
+                    Hi, I&rsquo;m Dhwani Sagar
+                  </h2>
+                  <p
+                    className="font-sub-label text-[#596743] mt-3 sm:mt-4 font-light tracking-[0.24em]"
+                    style={{
+                      fontSize: "clamp(0.75rem, 1.25vw, 1rem)",
+                      lineHeight: 1.4,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {s.subtitle}
+                  </p>
+                </div>
+              ) : (
+                <div className={`font-display text-center leading-[0.84] ${s.color}`} style={{ fontSize: "clamp(3.2rem, 15.5vw, 11rem)" }}>
+                  {s.lines.map((ln, k) => (
+                    <span key={k} className="block">{ln}</span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           {INTRO_PARAS.map((p, i) => (
@@ -191,11 +216,36 @@ export function PageIntro({ reduced }) {
         <div className="relative z-10 w-full h-screen">
           {INTRO_STATEMENTS.map((s, i) => (
             <div key={i} className={lineWrap}>
-              <div className={`intro-line-${i} opacity-0 font-display text-center leading-[0.84] ${s.color} ${s.label ? "tracking-[0.14em]" : ""}`} style={{ fontSize: s.label ? "clamp(0.95rem, 2.6vw, 1.7rem)" : "clamp(3.2rem, 15.5vw, 11rem)" }}>
-                {s.lines.map((ln, k) => (
-                  <span key={k} className="block">{ln}</span>
-                ))}
-              </div>
+              {s.isIntroHeadline ? (
+                <div className={`intro-line-${i} opacity-0 text-center flex flex-col items-center justify-center px-4`}>
+                  <h2
+                    className="font-creative text-[#3a382f] tracking-tight drop-shadow-[0_2px_8px_rgba(58,56,47,0.12)]"
+                    style={{
+                      fontSize: "clamp(2.4rem, 6.8vw, 5.2rem)",
+                      fontWeight: 800,
+                      lineHeight: 1.05,
+                    }}
+                  >
+                    Hi, I&rsquo;m Dhwani Sagar
+                  </h2>
+                  <p
+                    className="font-sub-label text-[#596743] mt-3 sm:mt-4 font-light tracking-[0.24em]"
+                    style={{
+                      fontSize: "clamp(0.75rem, 1.25vw, 1rem)",
+                      lineHeight: 1.4,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {s.subtitle}
+                  </p>
+                </div>
+              ) : (
+                <div className={`intro-line-${i} opacity-0 font-display text-center leading-[0.84] ${s.color}`} style={{ fontSize: "clamp(3.2rem, 15.5vw, 11rem)" }}>
+                  {s.lines.map((ln, k) => (
+                    <span key={k} className="block">{ln}</span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           {INTRO_PARAS.map((p, i) => (
@@ -308,86 +358,7 @@ export function PageWhatIDo({ reduced }) {
   );
 }
 
-/* ---------------- PAGE 3 · OBSESSION ---------------- */
-export function PageObsession({ reduced }) {
-  const root = useRef(null);
-  usePageScroll(
-    root,
-    reduced,
-    (tl) => {
-      tl.from(".ob-rise", { y: 80, opacity: 0, stagger: 0.07, duration: 0.28, ease: "power2.out" }, 0)
-        .from(
-          ".ob-note",
-          { y: -140, opacity: 0, rotation: (i) => [-6 + i * 5, 4 - i * 3][i % 2], stagger: 0.08, duration: 0.32 },
-          0.1
-        )
-        .to(".ob-drift", { y: -28, duration: 0.5, ease: "none" }, 0.45)
-        .fromTo(".ob-zoom", { scale: 0.75 }, { scale: 1.15, duration: 0.5, ease: "none" }, 0.5);
-    }
-  );
-
-  const notes = [
-    { t: "unexpected possibilities", bg: "#e6d99f", ink: "#3f3a2a", rot: "-rotate-3" },
-    { t: "little details nobody notices (I do)", bg: "#dda987", ink: "#4a3020", rot: "rotate-2" },
-    { t: "useful things made interesting", bg: "#f1ebdd", ink: "#3a382f", rot: "-rotate-2" },
-  ];
-
-  return (
-    <PageShell
-      id="obsession"
-      innerRef={root}
-      testid="page-obsession"
-      bg="#5c5b85"
-      ink="#f1ebdd"
-      line="rgba(241,235,221,0.16)"
-      margin="rgba(230,217,159,0.35)"
-    >
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-14 py-20">
-        <div className="ob-fall stamp text-[#e6d99f]">PAGE 03 — OBSESSION</div>
-
-        <h2 className="ob-rise mt-6 leading-[0.9]" style={{ fontSize: "clamp(2.4rem, 8.5vw, 7rem)" }}>
-          <span className="font-display block">WHAT I&rsquo;M</span>
-          <span className="font-display block text-[#e6d99f]">A LITTLE OBSESSED</span>
-          <span className="font-display block">WITH&hellip;</span>
-        </h2>
-
-        <div className="ob-rise flex flex-wrap gap-5 sm:gap-7 mt-9 max-w-3xl">
-          {notes.map((n) => (
-            <div
-              key={n.t}
-              className={`ob-note ${n.rot} relative px-5 py-6 sm:px-7 sm:py-8 shadow-[0_12px_30px_rgba(30,26,52,0.35)] max-w-[240px]`}
-              style={{ background: n.bg, color: n.ink }}
-            >
-              <span className="tape -top-3 left-1/2 -translate-x-1/2 rotate-2" />
-              <span className="font-hand text-xl sm:text-2xl leading-snug">{n.t}</span>
-            </div>
-          ))}
-        </div>
-
-        <p className="ob-rise font-body text-sm sm:text-lg text-[#f1ebdd]/85 max-w-2xl mt-9 leading-relaxed">
-          Lately I&rsquo;m coding a lot of stuff and learning new things faster than my notebooks can
-          hold them.
-        </p>
-
-        <div className="ob-rise inline-flex items-center gap-3 mt-7 pill !bg-[rgba(230,217,159,0.16)]">
-          OPEN TO NEW ROLES IN THE PRODUCT FIELD &rarr;
-        </div>
-      </div>
-
-      <div className="ob-fall ob-zoom absolute right-[7%] top-[16%] text-[#e6d99f]">
-        <Heart className="w-14 h-14 sm:w-20 sm:h-20 float-slow" style={{ "--rot": "8deg" }} />
-      </div>
-      <div className="ob-fall ob-drift absolute left-[5%] bottom-[18%] text-[#dda987] hidden sm:block">
-        <PaperPlane className="w-12 h-12" />
-      </div>
-      <div className="ob-fall absolute right-[16%] bottom-[16%] text-[#f1ebdd]/70 hidden lg:block">
-        <Sparkle className="w-7 h-7" />
-      </div>
-    </PageShell>
-  );
-}
-
-/* ---------------- PAGE 4 · WORK ---------------- */
+/* ---------------- PAGE 3 · WORK ---------------- */
 export function PageWork({ reduced }) {
   const root = useRef(null);
   usePageScroll(
@@ -412,7 +383,7 @@ export function PageWork({ reduced }) {
       margin="rgba(230,217,159,0.32)"
     >
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-14 py-20">
-        <div className="wk-fall stamp text-[#e6d99f]">PAGE 04 — THE WORK CHAPTER</div>
+        <div className="wk-fall stamp text-[#e6d99f]">PAGE 03 — THE WORK CHAPTER</div>
 
         <h2 className="wk-rise mt-6 leading-[0.9]" style={{ fontSize: "clamp(2.4rem, 8.5vw, 7rem)" }}>
           <span className="font-display block">FINTECH TAUGHT ME</span>

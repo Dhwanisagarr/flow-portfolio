@@ -1,0 +1,11 @@
+{
+  "name": "dhwani-sagar-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Illustrated Portfolio of Dhwani Sagar — Product Builder & Designer",
+  "scripts": {
+    "build": "cd frontend && yarn build",
+    "start": "cd frontend && yarn start"
+  }
+}
+

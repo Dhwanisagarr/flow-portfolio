@@ -14,7 +14,6 @@ and anyone open to collaborating on product ideas.
 - Obsession: ideas, unexpected possibilities, little details, making useful things more interesting; currently coding a lot and learning new things; open to product roles.
 - The Work Chapter: FYERS, Apprentice, Jul 2025 – Dec 2025, Bengaluru, India — onboarding/signup workflows with product, engineering and analytics; event tracking validation across Google Analytics, CleverTap and AppsFlyer; API and workflow validation with Postman and cURL.
 - The Scrapbook of Made Things: live projects — Dahlia, StreakUp, Stack Optimizer, Product Thinking Teardowns, SignalDesk — plus the diary site itself.
-- Guestbook: visitors can leave a note at the back of the diary.
 
 ## Say hello
 - Email: dhwanisagar17@gmail.com
