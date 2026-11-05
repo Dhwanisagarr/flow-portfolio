@@ -141,8 +141,8 @@ function App() {
     <div className="diary-root relative min-h-screen">
       <Header soundOn={soundOn} onToggleSound={toggleSound} onNav={scrollTo} />
       <DiaryExperience onNav={scrollTo} reduced={reduced} />
-      <Analytics />
-      <SpeedInsights />
+      <Analytics debug={true} />
+      <SpeedInsights debug={true} />
     </div>
   );
 }
