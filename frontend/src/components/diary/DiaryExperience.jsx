@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import TimelineSquiggle from "./TimelineSquiggle";
 import ProjectCaseStudyModal from "./ProjectCaseStudyModal";
@@ -227,6 +227,12 @@ export default function DiaryExperience({ onNav, reduced }) {
   const [dropCount, setDropCount] = useState(0);
   const [hasCompletedLoop, setHasCompletedLoop] = useState(false);
 
+  // Expanded sticky note modal state & drag tracking
+  const [expandedCard, setExpandedCard] = useState(null);
+  const expandedCardRef = useRef(null);
+  expandedCardRef.current = expandedCard;
+  const isDraggingCardRef = useRef(false);
+
   const isDroppingRef = useRef(false);
   const dropCountRef = useRef(0);
   const hasCompletedLoopRef = useRef(false);
@@ -235,10 +241,24 @@ export default function DiaryExperience({ onNav, reduced }) {
   dropCountRef.current = dropCount;
   hasCompletedLoopRef.current = hasCompletedLoop;
 
+  // Keyboard accessibility: ESC key collapses expanded note
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && expandedCardRef.current) {
+        setExpandedCard(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Drops front card down, cycles to end, and tracks loop return
   const dropTopCard = () => {
     if (isDroppingRef.current) return;
     isDroppingRef.current = true;
+    if (expandedCardRef.current) {
+      setExpandedCard(null);
+    }
 
     const top = stackCards[0];
     setDroppingId(top.id);
@@ -260,10 +280,44 @@ export default function DiaryExperience({ onNav, reduced }) {
     }, 320);
   };
 
+  // Drops a specific card (used when dropping an expanded card or targeted note)
+  const dropSpecificCard = (cardId) => {
+    if (isDroppingRef.current) return;
+    isDroppingRef.current = true;
+    if (expandedCardRef.current) {
+      setExpandedCard(null);
+    }
+    setDroppingId(cardId);
+    setTimeout(() => {
+      setStackCards((prev) => {
+        const idx = prev.findIndex((c) => c.id === cardId);
+        if (idx === -1) return prev;
+        const card = prev[idx];
+        const rest = prev.filter((c) => c.id !== cardId);
+        return [...rest, card];
+      });
+      setDroppingId(null);
+      setDropCount((c) => {
+        const next = c + 1;
+        if (next >= 4) {
+          setHasCompletedLoop(true);
+          hasCompletedLoopRef.current = true;
+        }
+        return next;
+      });
+      setTimeout(() => {
+        isDroppingRef.current = false;
+      }, 120);
+    }, 320);
+  };
+
   // Reverses card stack if user scrolls backward
   const cyclePrevCard = () => {
     if (isDroppingRef.current) return;
     isDroppingRef.current = true;
+    if (expandedCardRef.current) {
+      setExpandedCard(null);
+    }
     setStackCards((prev) => [prev[prev.length - 1], ...prev.slice(0, prev.length - 1)]);
     setDropCount((c) => {
       const next = Math.max(0, c - 1);
@@ -306,6 +360,9 @@ export default function DiaryExperience({ onNav, reduced }) {
         activeChapter === "WORK" || (scrollProgress >= 0.38 && scrollProgress <= 0.58);
       if (!isWorkSection) return;
 
+      // When note is expanded, let user scroll inside it without dropping cards
+      if (expandedCardRef.current) return;
+
       const now = Date.now();
       if (now - lastWheelTimeRef.current < 420) {
         if (!hasCompletedLoopRef.current) {
@@ -347,6 +404,9 @@ export default function DiaryExperience({ onNav, reduced }) {
       const isWorkSection =
         activeChapter === "WORK" || (scrollProgress >= 0.38 && scrollProgress <= 0.58);
       if (!isWorkSection) return;
+
+      // When note is expanded, let user read without dropping cards
+      if (expandedCardRef.current) return;
 
       if (!e.changedTouches || !e.changedTouches[0]) return;
       const touchEndY = e.changedTouches[0].clientY;
@@ -1121,7 +1181,19 @@ export default function DiaryExperience({ onNav, reduced }) {
         {/* ================================================================= */}
         {/* LAYER 2: PAGE WORK (Framer-style CardStack Experience)            */}
         {/* ================================================================= */}
-        <div className="work-layer absolute inset-0 z-40 flex items-center justify-center opacity-0 pointer-events-none will-change-transform text-[#f1ebdd] overflow-hidden">
+        <div
+          className={`work-layer absolute inset-0 flex items-center justify-center opacity-0 will-change-transform text-[#f1ebdd] overflow-hidden ${
+            activeChapter === "WORK" ? "z-50 pointer-events-auto" : "z-30 pointer-events-none"
+          }`}
+          style={{
+            pointerEvents: activeChapter === "WORK" ? "auto" : "none",
+          }}
+          onClick={(e) => {
+            if (expandedCardRef.current) {
+              setExpandedCard(null);
+            }
+          }}
+        >
           <div className="w-full h-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-12 pt-14 sm:pt-18 lg:pt-0 pb-6 sm:pb-10">
             {/* Left Column: Heading, intro, and resume */}
             <div className="work-intro-col w-full lg:w-[38%] shrink-0 flex flex-col justify-center select-none pr-0 lg:pr-6 z-20">
@@ -1158,7 +1230,14 @@ export default function DiaryExperience({ onNav, reduced }) {
                 </a>
                 <button
                   type="button"
-                  onClick={hasCompletedLoop ? advanceToNextPage : dropTopCard}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (hasCompletedLoop) {
+                      advanceToNextPage();
+                    } else {
+                      dropTopCard();
+                    }
+                  }}
                   className="font-cesty-sub text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase text-[#e6d99f] hover:text-white mt-0.5 sm:mt-1 font-semibold flex items-center gap-1.5 cursor-pointer transition-colors text-left"
                 >
                   {hasCompletedLoop ? "ALL 4 NOTES READ · ENTER SELECTED WORK →" : "PULL DOWN / SCROLL TO DROP ↓"}
@@ -1194,10 +1273,10 @@ export default function DiaryExperience({ onNav, reduced }) {
                   return (
                     <motion.div
                       key={card.id}
-                      className="absolute inset-0 w-full h-full bg-[#e6d99f] text-[#2c2720] rounded-lg p-4 sm:p-5 lg:p-6 shadow-[0_22px_55px_rgba(0,0,0,0.5)] flex flex-col justify-between select-none will-change-transform border-b-4 border-dashed border-[#c4b77e]"
+                      className="absolute inset-0 w-full h-full bg-[#e6d99f] text-[#2c2720] rounded-lg p-4 sm:p-5 lg:p-6 shadow-[0_22px_55px_rgba(0,0,0,0.5)] flex flex-col justify-between select-none will-change-transform border-b-4 border-dashed border-[#c4b77e] transition-shadow duration-200 hover:shadow-[0_26px_65px_rgba(0,0,0,0.65)]"
                       style={{
                         zIndex: baseZ,
-                        cursor: isFront ? "grab" : "default",
+                        cursor: isFront ? "grab" : "pointer",
                         touchAction: isFront ? "none" : "auto",
                         ...(card.grid
                           ? {
@@ -1246,14 +1325,22 @@ export default function DiaryExperience({ onNav, reduced }) {
                             }
                           : {}
                       }
+                      onDragStart={() => {
+                        isDraggingCardRef.current = true;
+                      }}
                       onDragEnd={(e, info) => {
+                        setTimeout(() => {
+                          isDraggingCardRef.current = false;
+                        }, 80);
                         if (info.offset.y > 45 || info.velocity.y > 180) {
                           dropTopCard();
                         }
                       }}
-                      onClick={() => {
-                        if (isFront && !isDropping) {
-                          dropTopCard();
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isDraggingCardRef.current) return;
+                        if (!isDropping) {
+                          setExpandedCard(card);
                         }
                       }}
                     >
@@ -1310,7 +1397,10 @@ export default function DiaryExperience({ onNav, reduced }) {
 
                       <div className={`pt-2 border-t border-[#2c2720]/10 text-[9.5px] font-condensed tracking-[0.2em] text-[#554b35] flex items-center justify-between ${card.id === "fyers" || card.id === "zidio" ? "pl-4" : ""}`}>
                         <span>{card.chapter}</span>
-                        <span>{isFront ? "PULL DOWN TO DROP ↓" : "ACTIVE RECORD"}</span>
+                        <span className="flex items-center gap-1 font-semibold">
+                          <span className="hover:underline">TAP TO EXPAND ↗</span>
+                          {isFront && <span>· DRAG DOWN ↓</span>}
+                        </span>
                       </div>
                     </motion.div>
                   );
@@ -1324,11 +1414,16 @@ export default function DiaryExperience({ onNav, reduced }) {
         {/* LAYER 3: SCRAPBOOK (Selected Work Horizontal Gallery) */}
         {/* ================================================================= */}
         <div
-          className={`scrapbook-layer absolute inset-0 z-50 flex items-center justify-start opacity-0 will-change-transform text-white overflow-hidden ${
+          className={`scrapbook-layer absolute inset-0 flex items-center justify-start opacity-0 will-change-transform text-white overflow-hidden ${
             activeChapter === "PROJECTS"
-              ? "pointer-events-auto visible"
-              : "pointer-events-none invisible"
+              ? "z-50 pointer-events-auto visible"
+              : "z-20 pointer-events-none invisible"
           }`}
+          style={{
+            pointerEvents: activeChapter === "PROJECTS" ? "auto" : "none",
+            visibility: activeChapter === "PROJECTS" ? "visible" : "hidden",
+            zIndex: activeChapter === "PROJECTS" ? 50 : 20,
+          }}
         >
           <div
             ref={scrapbookTrackRef}
@@ -1378,9 +1473,8 @@ export default function DiaryExperience({ onNav, reduced }) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (activeChapter === "PROJECTS" || scrollProgress > 0.58) {
-                    setActiveProjectModal(p);
-                  }
+                  if (activeChapter !== "PROJECTS") return;
+                  setActiveProjectModal(p);
                 }}
                 className="relative shrink-0 w-[82vw] sm:w-[460px] lg:w-[520px] h-[480px] sm:h-[530px] lg:h-[550px] flex flex-col justify-between p-4 sm:p-5 rounded-3xl bg-[#3f163b]/90 border border-white/20 hover:border-white/45 shadow-[0_20px_50px_rgba(20,0,0,0.45)] backdrop-blur-sm cursor-pointer transition-all duration-300 hover:-translate-y-1 group pointer-events-auto select-none"
               >
@@ -1412,6 +1506,7 @@ export default function DiaryExperience({ onNav, reduced }) {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (activeChapter !== "PROJECTS") return;
                         setActiveProjectModal(p);
                       }}
                       className="font-condensed text-[11px] tracking-[0.22em] text-[#e6d99f] group-hover:text-white transition-colors inline-flex items-center gap-1.5 uppercase font-bold cursor-pointer"
@@ -1602,6 +1697,135 @@ export default function DiaryExperience({ onNav, reduced }) {
             onNav={onNav}
           />
         </div>
+
+        {/* Expanded Sticky Note / Notepad Modal */}
+        <AnimatePresence>
+          {expandedCard && (
+            <motion.div
+              key="expanded-sticky-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 bg-black/65 backdrop-blur-sm cursor-pointer"
+              onClick={() => setExpandedCard(null)}
+            >
+              <motion.div
+                key={`expanded-sticky-${expandedCard.id}`}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.65}
+                dragMomentum={false}
+                onDragEnd={(e, info) => {
+                  if (info.offset.y > 55 || info.velocity.y > 180) {
+                    dropSpecificCard(expandedCard.id);
+                  }
+                }}
+                initial={{ scale: 0.85, opacity: 0, y: 25 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.85, opacity: 0, y: 25 }}
+                transition={{ type: "spring", stiffness: 280, damping: 25 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-[560px] max-h-[88vh] overflow-y-auto bg-[#e6d99f] text-[#2c2720] rounded-xl p-5 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.7)] flex flex-col justify-between border-b-6 border-dashed border-[#c4b77e] cursor-grab active:cursor-grabbing select-none"
+                style={{
+                  ...(expandedCard.grid
+                    ? {
+                        backgroundImage:
+                          "linear-gradient(to right, rgba(44,39,32,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(44,39,32,0.07) 1px, transparent 1px)",
+                        backgroundSize: "16px 16px",
+                      }
+                    : {}),
+                }}
+              >
+                {/* Tape / Clip Decor */}
+                {expandedCard.tape && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-36 h-7 bg-[#4a3e2a]/90 rounded-xs shadow-sm flex items-center justify-center text-[10.5px] text-[#e6d99f]/90 tracking-widest font-mono pointer-events-none">
+                    {expandedCard.tape}
+                  </div>
+                )}
+                {expandedCard.clip && (
+                  <div className="absolute -top-4 left-8 w-6 h-12 border-2 border-[#2c2720]/80 rounded-full shadow-sm bg-transparent pointer-events-none" />
+                )}
+                {expandedCard.grid && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-12 border-2 border-[#2c2720]/80 rounded-full shadow-sm bg-transparent pointer-events-none" />
+                )}
+
+                {/* Notebook punch holes on left */}
+                {(expandedCard.id === "fyers" || expandedCard.id === "zidio") && (
+                  <div className="absolute left-2.5 top-12 bottom-12 flex flex-col justify-between pointer-events-none">
+                    {[1, 2, 3, 4, 5, 6].map((h) => (
+                      <span key={h} className="w-3 h-3 rounded-full bg-[#383556]/40 shadow-inner block" />
+                    ))}
+                  </div>
+                )}
+
+                <div className={expandedCard.id === "fyers" || expandedCard.id === "zidio" ? "pl-5" : ""}>
+                  {/* Top Bar with Chapter & Close Button */}
+                  <div className="flex items-center justify-between pb-3 border-b border-[#2c2720]/15">
+                    <span className="font-condensed text-[10px] sm:text-[11px] tracking-[0.22em] uppercase text-[#554b35] font-semibold">
+                      {expandedCard.chapter} · WORK NOTE
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedCard(null)}
+                      className="font-condensed text-[11px] sm:text-xs tracking-[0.16em] uppercase px-3 py-1 rounded-md bg-[#2c2720]/10 hover:bg-[#2c2720]/20 text-[#2c2720] font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>✕</span>
+                      <span>CLOSE</span>
+                    </button>
+                  </div>
+
+                  {/* Company Title */}
+                  <div className="mt-3">
+                    <h3 className="font-condensed font-bold tracking-[0.14em] text-2xl sm:text-4xl text-[#2c2720]">
+                      {expandedCard.company}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <span className="font-condensed text-[9.5px] sm:text-[11px] tracking-[0.18em] bg-[#2c2720]/10 px-2.5 py-0.5 rounded text-[#2c2720] font-semibold uppercase">
+                        {expandedCard.badge}
+                      </span>
+                      <span className="font-condensed text-[11.5px] sm:text-sm tracking-[0.16em] text-[#554b35] font-semibold">
+                        {expandedCard.role}
+                      </span>
+                    </div>
+                    <div className="font-condensed text-[10px] sm:text-xs tracking-[0.15em] text-[#554b35]/85 mt-1">
+                      {expandedCard.location}
+                    </div>
+                  </div>
+
+                  {/* Details / Bullets */}
+                  <div className="mt-5 pt-3 border-t border-[#2c2720]/10">
+                    <div className="font-condensed text-[10.5px] tracking-[0.2em] uppercase text-[#6e6347] font-semibold mb-2">
+                      Key Contributions & Learnings
+                    </div>
+                    <ul className="space-y-3 font-body text-xs sm:text-[14px] leading-relaxed text-[#2c2720]/90">
+                      {expandedCard.bullets.map((b, idx) => (
+                        <li key={idx} className="flex gap-2.5 items-start">
+                          <span className="text-[#6e6347] font-bold text-base leading-none mt-0.5">&bull;</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div className={`mt-6 pt-3 border-t border-[#2c2720]/15 flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-[11.5px] font-condensed tracking-[0.18em] text-[#554b35] ${expandedCard.id === "fyers" || expandedCard.id === "zidio" ? "pl-5" : ""}`}>
+                  <button
+                    type="button"
+                    onClick={() => dropSpecificCard(expandedCard.id)}
+                    className="hover:text-[#2c2720] underline underline-offset-4 cursor-pointer font-semibold uppercase flex items-center gap-1"
+                  >
+                    <span>PULL DOWN / CLICK TO DROP NOTE &darr;</span>
+                  </button>
+                  <span className="text-[#554b35]/70 uppercase">
+                    CLICK OUTSIDE OR ESC TO SHRINK
+                  </span>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Case Study Modal Overlay (Clean, dedicated pastel page without URL change) */}
         {activeProjectModal && (
