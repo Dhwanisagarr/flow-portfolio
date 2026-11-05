@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import "./App.css";
 import Header from "./components/diary/Header";
 import DiaryExperience from "./components/diary/DiaryExperience";
@@ -141,6 +142,7 @@ function App() {
       <Header soundOn={soundOn} onToggleSound={toggleSound} onNav={scrollTo} />
       <DiaryExperience onNav={scrollTo} reduced={reduced} />
       <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
